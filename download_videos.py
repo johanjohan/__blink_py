@@ -76,7 +76,6 @@ logging.basicConfig(
         logging.StreamHandler()  # Output logs to the console
     ]
 )
-
 logger = logging.getLogger(__name__)
 
 # ------------------------------------------------
@@ -91,7 +90,6 @@ EXT             = ".mp4"
 OUTDIR          = os.path.abspath("__blink_videos") # "../__blink_videos"
 CAMERA_NAME     = "all"
 DELAY           = 2 # secs
-
 ASCIIFONT       = 'isometric3'
 
 B_BLINK         = True
@@ -104,7 +102,6 @@ B_FOLDERS       = True
 # ------------------------------------------------
 colorama.init()
 logger.info(Fore.YELLOW + art.text2art("blink", font=ASCIIFONT) + Fore.RESET)
-#logger.info(Fore.CYAN + art.text2art("config", font=ASCIIFONT) + Fore.RESET)
 
 # change cwd
 if False:
@@ -114,7 +111,7 @@ if False:
     # input("Press Enter to continue...")
     # exit(0)
 # ------------------------------------------------
-# |
+# | UTIL
 # ------------------------------------------------
 def create_dir_if_not_exists(dir_path):
     if not os.path.exists(dir_path):
@@ -182,13 +179,9 @@ def convert_utc_to_local(date_str, time_str, local_timezone_str, local_z_str):
     
     return formatted_local_dt
 
-
-
 # ------------------------------------------------
-# |
+# | blink
 # ------------------------------------------------
-
-# blink
 async def start():
     
     blink = Blink()
@@ -224,13 +217,15 @@ async def start():
         ) 
     
 
-    # NEW TODO - from blinksync.py - save secret internals
+    # from blinksync.py - save secret internals, just for info...
     await blink.save(f"{OUTDIR}/../{FOLDER_SECRET}/__temp_blink.json") # OK!!!
+    
+    #await util.json_dumps(blink.homescreen)
+    await util.json_save(blink.homescreen, f"{OUTDIR}/../{FOLDER_SECRET}/homescreen.json")
 
     # ------------------------------------------------
-    # | sync module
+    # | sync module: dl local files from usb
     # ------------------------------------------------
-    
     if B_SYNC:
         logger.info(Fore.CYAN + art.text2art("save sync", font=ASCIIFONT) + Fore.RESET)
         logger.debug(f"Sync status: {blink.network_ids}")
@@ -274,10 +269,8 @@ async def start():
         # download videos
         manifest = my_sync._local_storage["manifest"]
         for item in reversed(manifest):
-     
-            # D:\__BUP_V_KOMPLETT\X\111_BUP\33projects\__blink_py\__blink_videos/__sync__/2-G8T1-GJ01-3205-1XHG_2024-09-11T06_05_17+02_00.mp4   
             dt = item.created_at.astimezone().isoformat().replace(':','-')
-            filepath = f"{OUTDIR}/../{FOLDER_LOCAL}/{dt[:10]}/{item.name}-{dt}_sync.mp4"
+            filepath = f"{OUTDIR}/../{FOLDER_LOCAL}/{dt[:10]}/{item.name}-{dt}_sync.mp4" # dt[:10]} is date folder
             create_dir_if_not_exists(os.path.dirname(filepath))
             
             if os.path.exists(filepath):
@@ -300,7 +293,7 @@ async def start():
 if B_BLINK:
     blink = asyncio.run(start())
     
-# Properly close the Blink session TODO 
+# Properly close the Blink session TODO ???
 ### await blink.async_logout()
 
 # ------------------------------------------------
