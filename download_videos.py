@@ -92,23 +92,22 @@ from tqdm import tqdm
 class CustomFormatter(logging.Formatter):
     #https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
 
-    grey        = Fore.LIGHTBLACK_EX
-    white       = Fore.WHITE
-    yellow      = Fore.YELLOW
-    red         = Fore.RED
-    bold_red    = Style.BRIGHT + Fore.RED
-    reset       = Fore.RESET
-    level       = grey + '[%(levelname)7s] '
-    level       = grey + '%(levelname)7s | '
+    # # # # # grey        = Fore.LIGHTBLACK_EX
+    # # # # # white       = Fore.WHITE
+    # # # # # yellow      = Fore.YELLOW
+    # # # # # red         = Fore.RED
+    # # # # # bold_red    = Style.BRIGHT + Fore.RED
+    # # # # # reset       = Fore.RESET
+    level       = Fore.LIGHTBLACK_EX + '%(levelname)7s | '
     #format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
     format = '%(message)s'
 
     FORMATS = {
-        logging.DEBUG:      level + grey + format + reset,
-        logging.INFO:       level + white + format + reset,
-        logging.WARNING:    level + yellow + format + reset,
-        logging.ERROR:      level + red + format + reset,
-        logging.CRITICAL:   level + bold_red + format + reset
+        logging.DEBUG:      level + Fore.LIGHTBLACK_EX + format + Fore.RESET,
+        logging.INFO:       level + Fore.WHITE + format + Fore.RESET,
+        logging.WARNING:    level + Fore.YELLOW + format + Fore.RESET,
+        logging.ERROR:      level + Fore.RED + format + Fore.RESET,
+        logging.CRITICAL:   level + Style.BRIGHT + Fore.RED + format + Fore.RESET
     }
 
     def format(self, record):
@@ -126,13 +125,11 @@ class CustomFormatter(logging.Formatter):
 # # # # #     ]
 # # # # # )
 logger = logging.getLogger(__name__)
-
-
 logger.setLevel(logging.INFO) # change here INFO DEBUG
 
 # create console handler with a higher log level
 ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
+ch.setLevel(logging.DEBUG) # keep logging.DEBUG
 ch.setFormatter(CustomFormatter())
 logger.addHandler(ch)
 
