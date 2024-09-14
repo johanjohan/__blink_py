@@ -37,6 +37,7 @@
 
         Wait for Retry: Blink allows up to 4 attempts per 3 days for SMS delivery. If you have already exceeded this limit, you will need to wait until the cooldown period expires before trying again.
     
+    ...........................................
     Fore: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
     Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
     Style: DIM, NORMAL, BRIGHT, RESET_ALL
@@ -83,7 +84,7 @@ logger = logging.getLogger(__name__)
 # ------------------------------------------------
 FOLDER_CLOUD    = "sorted_cloud"
 FOLDER_LOCAL    = "sorted_local"
-FOLDER_SECRET   = "secret"
+FOLDER_SECRET   = ".secret"
 CREDENTIALS     = f"{FOLDER_SECRET}/.blink_credentials.json" # "../__blink_credentials.json"
 
 EXT             = ".mp4"
