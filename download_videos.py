@@ -40,10 +40,16 @@
     Fore: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
     Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
     Style: DIM, NORMAL, BRIGHT, RESET_ALL
+    
+    ...........................................
+    from dotenv import load_dotenv
+
+    load_dotenv()
+    webhook_passphrase  = os.getenv("webhook_passphrase") # config.WEBHOOK_PASSPHRASE
+    ipinfo_token        = os.getenv("ipinfo_token")
  
 """
 import asyncio
-from aiohttp import ClientSession
 from blinkpy.blinkpy import Blink
 from blinkpy.auth import Auth
 import os
@@ -51,9 +57,7 @@ import logging
 import shutil
 from datetime import datetime
 import pytz
-import json
 import blinkpy.helpers.util as util
-#from blinkpy.helpers.util import json_load
 import art
 import colorama 
 from colorama import Fore, Back, Style
@@ -66,7 +70,7 @@ from sortedcontainers import SortedSet
 EXT         = ".mp4"
 OUTDIR      = os.path.abspath("__blink_videos") # "../__blink_videos"
 CAMERA_NAME = "all"
-CREDENTIALS = "blink_credentials.json" # "../__blink_credentials.json"
+CREDENTIALS = ".blink_credentials.json" # "../__blink_credentials.json"
 
 ASCIIFONT   = 'isometric3'
 

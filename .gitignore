@@ -162,7 +162,7 @@ cython_debug/
 #.idea/
 
 # 3j
-blink_credentials.json
+.blink_credentials.json
 __temp_blink*.json
 
 # https://github.com/fronzbot/blinkpy
