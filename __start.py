@@ -14,8 +14,9 @@ if __name__ == "__main__":
 
         # Path to a Python interpreter that runs any Python script
         # under the virtualenv /path/to/virtualenv/
-        python_bin  = "D:/__BUP_V_KOMPLETT/X/111_BUP/33projects/__blink_py/venv/Scripts/python.exe"
-        script_file = "D:/__BUP_V_KOMPLETT/X/111_BUP/33projects/__blink_py/download_videos.py"
+        my_dir = os.path.dirname(os.path.abspath(__file__))
+        python_bin  = f"{my_dir}/venv/Scripts/python.exe"
+        script_file = f"{my_dir}/download_videos.py"
 
         # set cwd to script_file
         print(f"current working dir: {os.getcwd()}")

@@ -64,6 +64,8 @@
     ...........................................
     ...........................................
     ...........................................
+    pip install git+https://github.com/tcbegley/tqdm-countdown.git
+    
     ...........................................    
  
 """
@@ -75,11 +77,14 @@ import logging
 import shutil
 from datetime import datetime
 import pytz
-import blinkpy.helpers.util as util
+import blinkpy.helpers.util as bhutil
 import art
 import colorama 
 from colorama import Fore, Back, Style
 from sortedcontainers import SortedSet
+import time
+#from tqdm_countdown import tqdm
+from tqdm import tqdm
 
 # ------------------------------------------------
 # | logger
@@ -130,6 +135,31 @@ if False:
 # ------------------------------------------------
 # | UTIL
 # ------------------------------------------------
+# https://github.com/sepandhaghighi/art/blob/master/FontList.ipynb
+def countdown(_secs=3, _msg="", _fore=Fore.LIGHTBLACK_EX, _font="ticks"): # LIGHTBLACK_EX funky_dr block2  ticks univers varsity black_bubble  fancy141 tarty3 
+    if False:
+        for i in range(int(_secs)):
+            s = str(_secs-i)
+            if True:
+                print(f"{_fore}{s}{Fore.RESET}   ", end='')
+            else:
+                s = art.text2art(str(_secs-i) + _msg, font=_font)
+                logger.info(f"{_fore}{s}{Fore.RESET}")
+            time.sleep(1)
+        print()
+    else:
+        bar_format = '|{bar:40}| '
+        bar_format = '{l_bar}{bar:60}{r_bar}{bar:-10b}'
+        bar_format = '{l_bar}{bar:60} {n_fmt}/{total_fmt} [{elapsed}<{remaining}]'
+        bar_format = '{bar:44} {remaining}'
+        #bar_format = "{desc}: {percentage:.1f}%|{bar:80}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
+        tqdm.write(f"{_fore}", end='\n')
+        div = 1.0
+        for i in tqdm(range(int(_secs * div)), bar_format=bar_format): #  ncols=80 bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}'
+            time.sleep(1.0/div)
+        tqdm.write(f"{Fore.RESET}", end='\n')
+        exit(0)
+        
 def create_dir_if_not_exists(dir_path):
     if not os.path.exists(dir_path):
         try:
@@ -202,7 +232,7 @@ def convert_utc_to_local(date_str, time_str, local_timezone_str, local_z_str):
 async def start():
     
     blink = Blink()
-    auth = Auth(await util.json_load(CREDENTIALS))
+    auth = Auth(await bhutil.json_load(CREDENTIALS))
     blink.auth = auth
     await blink.start()
     
@@ -238,13 +268,12 @@ async def start():
     await blink.save(f"{OUTDIR}/../{FOLDER_SECRET}/__temp_blink.json") # OK!!!
     
     #await util.json_dumps(blink.homescreen)
-    await util.json_save(blink.homescreen, f"{OUTDIR}/../{FOLDER_SECRET}/homescreen.json")
+    await bhutil.json_save(blink.homescreen, f"{OUTDIR}/../{FOLDER_SECRET}/homescreen.json")
 
     # ------------------------------------------------
     # | sync module: dl local files from usb
     # ------------------------------------------------
     if B_SYNC:
-        logger.info(Fore.CYAN + art.text2art("save sync", font=ASCIIFONT) + Fore.RESET)
         logger.debug(f"Sync status: {blink.network_ids}")
         logger.debug(f"Sync len: {len(blink.networks)}")   
         logger.info(f"Sync: {blink.networks}")   
@@ -308,6 +337,9 @@ async def start():
 # | run blink
 # ------------------------------------------------
 if B_BLINK:
+    logger.info(Fore.CYAN + art.text2art("save sync", font=ASCIIFONT) + Fore.RESET)
+    countdown()
+    #exit(0)
     blink = asyncio.run(start())
     
 # Properly close the Blink session TODO ???
@@ -317,6 +349,7 @@ if B_BLINK:
 # | sort & copy files to local date folder    
 # ------------------------------------------------
 if B_FOLDERS:
+    countdown()
     logger.info(Fore.CYAN + art.text2art("folders", font=ASCIIFONT) + Fore.RESET)
 
     mp4_files = scan_directory_for_mp4(OUTDIR)
@@ -353,3 +386,6 @@ if B_FOLDERS:
         else:
             logger.info(f"{prefix} skipping \n\t{Fore.YELLOW}{dest_path}...{Fore.RESET}")
     ### for mp4_files
+
+countdown()
+exit(0)
