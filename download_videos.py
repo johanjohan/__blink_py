@@ -89,16 +89,52 @@ from tqdm import tqdm
 # ------------------------------------------------
 # | logger
 # ------------------------------------------------
+class CustomFormatter(logging.Formatter):
+    #https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
+
+    grey        = Fore.LIGHTBLACK_EX
+    white       = Fore.WHITE
+    yellow      = Fore.YELLOW
+    red         = Fore.RED
+    bold_red    = Style.BRIGHT + Fore.RED
+    reset       = Fore.RESET
+    level       = grey + '[%(levelname)7s] '
+    level       = grey + '%(levelname)7s | '
+    #format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
+    format = '%(message)s'
+
+    FORMATS = {
+        logging.DEBUG:      level + grey + format + reset,
+        logging.INFO:       level + white + format + reset,
+        logging.WARNING:    level + yellow + format + reset,
+        logging.ERROR:      level + red + format + reset,
+        logging.CRITICAL:   level + bold_red + format + reset
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
+    
 # Configure the logger
-logging.basicConfig(
-    level=logging.INFO,  # Set the logging level to DEBUG INFO
-    #format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',  # Define the log message format
-    format='%(message)s',  # Define the log message format
-    handlers=[
-        logging.StreamHandler()  # Output logs to the console
-    ]
-)
+# # # # # logging.basicConfig(
+# # # # #     level=logging.INFO,  # Set the logging level to DEBUG INFO
+# # # # #     #format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',  # Define the log message format
+# # # # #     format='[%(levelname)7s] %(message)s',  # Define the log message format
+# # # # #     handlers=[
+# # # # #         logging.StreamHandler()  # Output logs to the console
+# # # # #     ]
+# # # # # )
 logger = logging.getLogger(__name__)
+
+
+logger.setLevel(logging.INFO) # change here INFO DEBUG
+
+# create console handler with a higher log level
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+ch.setFormatter(CustomFormatter())
+logger.addHandler(ch)
 
 # ------------------------------------------------
 # | params
@@ -115,15 +151,34 @@ DELAY           = 2 # secs
 ASCIIFONT       = 'isometric3'
 
 B_BLINK         = True
-B_CLOUD         = True
-B_SYNC          = True
+B_CLOUD         = True # in B_BLINK
+B_SYNC          = True # in B_BLINK
+
 B_FOLDERS       = True
 
 # ------------------------------------------------
 # | init
 # ------------------------------------------------
 colorama.init()
-logger.info(Fore.YELLOW + art.text2art("blink", font=ASCIIFONT) + Fore.RESET)
+# print()
+# print(Fore.BLACK + 'BLACK')
+# print(Fore.BLUE + 'BLUE')
+# print(Fore.CYAN + 'CYAN')
+# print(Fore.GREEN + 'GREEN')
+# print(Fore.LIGHTBLACK_EX + 'LIGHTBLACK_EX')
+# print(Fore.LIGHTBLUE_EX + 'LIGHTBLUE_EX')
+# print(Fore.LIGHTCYAN_EX + 'LIGHTCYAN_EX')
+# print(Fore.LIGHTGREEN_EX + 'LIGHTGREEN_EX')
+# print(Fore.LIGHTMAGENTA_EX + 'LIGHTMAGENTA_EX')
+# print(Fore.LIGHTRED_EX + 'LIGHTRED_EX')
+# print(Fore.LIGHTWHITE_EX + 'LIGHTWHITE_EX')
+# print(Fore.LIGHTYELLOW_EX + 'LIGHTYELLOW_EX')
+# print(Fore.MAGENTA + 'MAGENTA')
+# print(Fore.RED + 'RED')
+# print(Fore.RESET + 'RESET')
+# print(Fore.WHITE + 'WHITE')
+# print(Fore.YELLOW + 'YELLOW')
+logger.info(f"\n{Fore.YELLOW}{art.text2art("XBLINK", font=ASCIIFONT)}") # {Fore.RESET}
 
 # change cwd
 if False:
@@ -148,17 +203,16 @@ def countdown(_secs=3, _msg="", _fore=Fore.LIGHTBLACK_EX, _font="ticks"): # LIGH
             time.sleep(1)
         print()
     else:
-        bar_format = '|{bar:40}| '
-        bar_format = '{l_bar}{bar:60}{r_bar}{bar:-10b}'
-        bar_format = '{l_bar}{bar:60} {n_fmt}/{total_fmt} [{elapsed}<{remaining}]'
-        bar_format = '{bar:44} {remaining}'
+        # bar_format = '|{bar:40}| '
+        # bar_format = '{l_bar}{bar:60}{r_bar}{bar:-10b}'
+        # bar_format = '{l_bar}{bar:60} {n_fmt}/{total_fmt} [{elapsed}<{remaining}]'
+        bar_format = '{bar:44} {remaining}\t'
         #bar_format = "{desc}: {percentage:.1f}%|{bar:80}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
         tqdm.write(f"{_fore}", end='\n')
         div = 1.0
         for i in tqdm(range(int(_secs * div)), bar_format=bar_format): #  ncols=80 bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}'
             time.sleep(1.0/div)
         tqdm.write(f"{Fore.RESET}", end='\n')
-        exit(0)
         
 def create_dir_if_not_exists(dir_path):
     if not os.path.exists(dir_path):
@@ -171,7 +225,7 @@ def create_dir_if_not_exists(dir_path):
         logger.debug(f"Directory already exists: {dir_path}")
         pass
         
-def scan_directory_for_mp4(outdir):
+def scan_directory_for_mp4(outdir, _ext=EXT):
     # Ensure the directory exists
     if not os.path.isdir(outdir):
         logger.error(f"The directory {outdir} does not exist.")
@@ -181,11 +235,11 @@ def scan_directory_for_mp4(outdir):
     files = os.listdir(outdir)
 
     # Filter files ending with ".mp4"
-    mp4_files = [file for file in files if file.lower().endswith(EXT)]
+    mp4_files = [file for file in files if file.lower().endswith(_ext)]
 
     return mp4_files
 
-def extract_datetime(filename):
+def extract_blink_utc_datetime(filename):
     # 2-g8t1-gj01-3205-1xhg-2024-09-12t18-59-39-00-00.mp4
     # Remove the file extension
     basename = os.path.splitext(filename)[0]
@@ -196,9 +250,12 @@ def extract_datetime(filename):
 
     # Extract date and time
     date_str = date_time_str[:10]  # "2024-09-12" # UTC
-    time_str = date_time_str[11:]  # "18-59-39-00-00"
+    time_str = date_time_str[11:19]  # "18-59-39-00-00"
+    tz = date_time_str[19:]
+    
+    logger.debug(f"{camera_str}, {date_str}, {time_str}, {tz}")
 
-    return camera_str, date_str, time_str
+    return camera_str, date_str, time_str, tz
     
 def convert_utc_to_local(date_str, time_str, local_timezone_str, local_z_str):
     # Combine date and time strings into one string
@@ -251,7 +308,7 @@ async def start():
               Instead of downloading, entries will be printed to log.
     """
     if B_CLOUD:
-        logger.info(Fore.CYAN + art.text2art("save cloud", font=ASCIIFONT) + Fore.RESET)
+        logger.info(f"\n{Fore.CYAN}{art.text2art("save cloud", font=ASCIIFONT)}")
         create_dir_if_not_exists(OUTDIR)
         logger.info(f"saving videos to {OUTDIR}\n")
         
@@ -337,9 +394,8 @@ async def start():
 # | run blink
 # ------------------------------------------------
 if B_BLINK:
-    logger.info(Fore.CYAN + art.text2art("save sync", font=ASCIIFONT) + Fore.RESET)
+    logger.info(f"\n{Fore.CYAN}{art.text2art("save sync", font=ASCIIFONT)}")
     countdown()
-    #exit(0)
     blink = asyncio.run(start())
     
 # Properly close the Blink session TODO ???
@@ -350,17 +406,17 @@ if B_BLINK:
 # ------------------------------------------------
 if B_FOLDERS:
     countdown()
-    logger.info(Fore.CYAN + art.text2art("folders", font=ASCIIFONT) + Fore.RESET)
+    logger.info(f"\n{Fore.CYAN}{art.text2art("folders", font=ASCIIFONT)}")
 
     mp4_files = scan_directory_for_mp4(OUTDIR)
     logger.info(f"Found {len(mp4_files)} files ending with \"{EXT}\" \n")
 
     for index, file in enumerate(mp4_files):
         logger.debug(file)
-        camera_str, date_str, time_str = extract_datetime(file)
-        time_str_extra = time_str[-6:]  # could mean UTC -00-00
-        time_str = time_str[:-6] # strip tz
-        logger.debug(' '.join([camera_str, date_str, time_str, time_str_extra]))
+        camera_str, date_str, time_str, tz = extract_blink_utc_datetime(file)
+        # time_str_extra = time_str[-6:]  # could mean UTC -00-00
+        # time_str = time_str[:-6] # strip tz
+        logger.debug(', '.join([camera_str, date_str, time_str, tz]))
         
         local_time = convert_utc_to_local(date_str, time_str, 'Europe/Berlin', "+02-00")
         logger.debug(f"local_time: {local_time}")
