@@ -64,6 +64,21 @@ from colorama import Fore, Back, Style
 from sortedcontainers import SortedSet
 
 # ------------------------------------------------
+# | logger
+# ------------------------------------------------
+# Configure the logger
+logging.basicConfig(
+    level=logging.DEBUG,  # Set the logging level to DEBUG INFO
+    #format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',  # Define the log message format
+    format='%(message)s',  # Define the log message format
+    handlers=[
+        logging.StreamHandler()  # Output logs to the console
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
+# ------------------------------------------------
 # | params
 # ------------------------------------------------
 FOLDER_CLOUD    = "sorted_cloud"
@@ -87,14 +102,14 @@ B_FOLDERS       = True
 # | init
 # ------------------------------------------------
 colorama.init()
-print(Fore.YELLOW + art.text2art("blink", font=ASCIIFONT) + Fore.RESET)
-#print(Fore.CYAN + art.text2art("config", font=ASCIIFONT) + Fore.RESET)
+logger.info(Fore.YELLOW + art.text2art("blink", font=ASCIIFONT) + Fore.RESET)
+#logger.info(Fore.CYAN + art.text2art("config", font=ASCIIFONT) + Fore.RESET)
 
 # change cwd
 if False:
-    print(f"current working dir: {os.getcwd()}")
+    logger.debug(f"current working dir: {os.getcwd()}")
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    print(f"current working dir: {os.getcwd()}")
+    logger.debug(f"current working dir: {os.getcwd()}")
     # input("Press Enter to continue...")
     # exit(0)
 # ------------------------------------------------
@@ -104,17 +119,17 @@ def create_dir_if_not_exists(dir_path):
     if not os.path.exists(dir_path):
         try:
             os.makedirs(dir_path)
-            #print(f"Directory created: {dir_path}")
+            logger.debug(f"Directory created: {dir_path}")
         except Exception as e:
-            print(f"Error creating directory {dir_path}: {e}")
+            logger.error(f"Error creating directory {dir_path}: {e}")
     else:
-        #print(f"Directory already exists: {dir_path}")
+        logger.debug(f"Directory already exists: {dir_path}")
         pass
         
 def scan_directory_for_mp4(outdir):
     # Ensure the directory exists
     if not os.path.isdir(outdir):
-        print(f"The directory {outdir} does not exist.")
+        logger.error(f"The directory {outdir} does not exist.")
         return []
 
     # List all files in the directory
@@ -148,7 +163,7 @@ def convert_utc_to_local(date_str, time_str, local_timezone_str, local_z_str):
     try:
         utc_dt = datetime.strptime(date_time_str, '%Y-%m-%dT%H-%M-%S')
     except ValueError as e:
-        print(f"Error parsing datetime: {e}")
+        logger.error(f"Error parsing datetime: {e}")
         return None
     
     # Define UTC and local timezones
@@ -166,20 +181,7 @@ def convert_utc_to_local(date_str, time_str, local_timezone_str, local_z_str):
     
     return formatted_local_dt
 
-# ------------------------------------------------
-# | logger
-# ------------------------------------------------
-#print(Fore.CYAN + art.text2art("logger", font=ASCIIFONT) + Fore.RESET)
 
-# Configure the logger
-logging.basicConfig(
-    level=logging.INFO,  # Set the logging level to DEBUG
-    #format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',  # Define the log message format
-    format='%(message)s',  # Define the log message format
-    handlers=[
-        logging.StreamHandler()  # Output logs to the console
-    ]
-)
 
 # ------------------------------------------------
 # |
@@ -208,9 +210,9 @@ async def start():
               Instead of downloading, entries will be printed to log.
     """
     if B_CLOUD:
-        print(Fore.CYAN + art.text2art("save cloud", font=ASCIIFONT) + Fore.RESET)
+        logger.info(Fore.CYAN + art.text2art("save cloud", font=ASCIIFONT) + Fore.RESET)
         create_dir_if_not_exists(OUTDIR)
-        print(f"saving videos to {OUTDIR}\n")
+        logger.info(f"saving videos to {OUTDIR}\n")
         
         await blink.download_videos(
             path=OUTDIR, 
@@ -221,7 +223,7 @@ async def start():
         ) 
     
 
-    # NEW TODO - from blinksync.py
+    # NEW TODO - from blinksync.py - save secret internals
     await blink.save(f"{OUTDIR}/../{FOLDER_SECRET}/__temp_blink.json") # OK!!!
 
     # ------------------------------------------------
@@ -229,42 +231,45 @@ async def start():
     # ------------------------------------------------
     
     if B_SYNC:
-        print(Fore.CYAN + art.text2art("save sync", font=ASCIIFONT) + Fore.RESET)
-        print(f"Sync status: {blink.network_ids}")
-        print(f"Sync len: {len(blink.networks)}")   
-        print(f"Sync: {blink.networks}")   
+        logger.info(Fore.CYAN + art.text2art("save sync", font=ASCIIFONT) + Fore.RESET)
+        logger.debug(f"Sync status: {blink.network_ids}")
+        logger.debug(f"Sync len: {len(blink.networks)}")   
+        logger.info(f"Sync: {blink.networks}")   
         assert len(blink.networks) > 0
         
         my_sync: BlinkSyncModule = blink.sync[
             blink.networks[list(blink.networks)[0]]["name"]
-        ]        
+        ]       
+        
+        _b_verbose = True 
 
         # verbose cams
-        if False:
+        if _b_verbose:
+            logger.debug("listing cameras:")
             for name, camera in blink.cameras.items():
-                print(name)
-                print(camera.attributes)
-                print()
+                logger.debug(name)
+                logger.debug(camera.attributes, "\n")
 
         # local storage
         my_sync._local_storage["manifest"] = SortedSet()
         await my_sync.refresh()
         
         # verbose _local_storage
-        if False:
+        if _b_verbose:
             if my_sync.local_storage and my_sync.local_storage_manifest_ready:
-                print(f"{Fore.GREEN}Manifest is ready{Fore.RESET}")
-                print(f"Manifest {Fore.CYAN}{my_sync._local_storage['manifest']}{Fore.RESET}")
+                logger.debug(f"{Fore.GREEN}Manifest is ready{Fore.RESET}")
+                logger.debug(f"Manifest {Fore.CYAN}{my_sync._local_storage['manifest']}{Fore.RESET}")
             else:
-                print(f"{Fore.RED}Manifest not ready{Fore.RESET}")
-            print("\n"*1)
+                logger.error(f"{Fore.RED}Manifest not ready{Fore.RESET}")
+            logger.debug("\n"*1)
                 
+            logger.debug("listing blink.cameras.items:")
             for name, camera in blink.cameras.items():
-                print(f"{camera.name} status arm: {blink.cameras[name].arm}")
-            print("\n"*1)
+                logger.debug(f"{camera.name} status arm: {blink.cameras[name].arm}")
+            logger.debug("\n"*1)
                 
             new_vid = await my_sync.check_new_videos()
-            print(f"New videos?: {new_vid}")
+            logger.debug(f"New videos?: {new_vid}")
 
         # download videos
         manifest = my_sync._local_storage["manifest"]
@@ -276,11 +281,11 @@ async def start():
             create_dir_if_not_exists(os.path.dirname(filepath))
             
             if os.path.exists(filepath):
-                print(f"{Fore.YELLOW}\t sync skipping: {filepath}{Fore.RESET}")
+                logger.info(f"{Fore.YELLOW}\t sync skipping: {filepath}{Fore.RESET}")
                 continue
             else:
-                print(f"{Fore.GREEN}\t sync downloading: {filepath}{Fore.RESET}")
-                print(f"{Fore.CYAN}\t item: {item.name} {item.id} {Fore.RESET}") # {item}
+                logger.info(f"{Fore.GREEN}\t sync downloading: {filepath}{Fore.RESET}")
+                logger.info(f"{Fore.CYAN}\t item: {item.name} {item.id} {Fore.RESET}") # {item}
                 
                 await item.prepare_download(blink) # ? copy usb to cloud?
                 await item.download_video(blink, filepath)
@@ -302,42 +307,39 @@ if B_BLINK:
 # | sort & copy files to local date folder    
 # ------------------------------------------------
 if B_FOLDERS:
-    print(Fore.CYAN + art.text2art("folders", font=ASCIIFONT) + Fore.RESET)
+    logger.info(Fore.CYAN + art.text2art("folders", font=ASCIIFONT) + Fore.RESET)
 
     mp4_files = scan_directory_for_mp4(OUTDIR)
-    print(f"Found files ending with {EXT}: {len(mp4_files)}\n")
+    logger.info(f"Found {len(mp4_files)} files ending with \"{EXT}\" \n")
 
     for index, file in enumerate(mp4_files):
-        #print(file)
+        logger.debug(file)
         camera_str, date_str, time_str = extract_datetime(file)
         time_str_extra = time_str[-6:]  # could mean UTC -00-00
         time_str = time_str[:-6] # strip tz
-        #print(camera_str, date_str, time_str, time_str_extra)
+        logger.debug(' '.join([camera_str, date_str, time_str, time_str_extra]))
         
         local_time = convert_utc_to_local(date_str, time_str, 'Europe/Berlin', "+02-00")
-        #print(f"local_time: {local_time}")
+        logger.debug(f"local_time: {local_time}")
         local_date_str = str(local_time)[:10]
-        #print(f"date_str: {date_str} --> local_date_str: {local_date_str}")
+        logger.debug(f"date_str: {date_str} --> local_date_str: {local_date_str}")
 
         local_file = camera_str + "-" + str(local_time) + EXT
         # 2-g8t1-gj01-3205-1xhg-2024-09-12T23-48-04+02-00.mp4
-        #print(f"{local_file}")
+        logger.debug(f"{local_file}")
         
         date_dir = os.path.join(OUTDIR, f"../{FOLDER_CLOUD}/", local_date_str) # date_str
         create_dir_if_not_exists(date_dir)
      
         src_path  = os.path.join(OUTDIR, file)
         dest_path = os.path.join(date_dir, local_file) 
-        print(f"{index+1}/{len(mp4_files)} - ", end='')
+        prefix = f"{index+1}/{len(mp4_files)} -"
         if not os.path.exists(dest_path):
             try:
-                ###shutil.move(src_path, dest_path)
-                shutil.copy(src_path, dest_path)
-                print(f"copied \n\t{Fore.GREEN}{src_path} \n\tto \n\t{dest_path}")
+                shutil.copy(src_path, dest_path) # move
+                logger.info(f"{prefix} copied \n\t{Fore.GREEN}{src_path} \n\tto \n\t{dest_path}{Fore.RESET}")
             except Exception as e:
-                print(f"Error moving \n\t{Fore.RED}{file}: \n\t{e}") 
+                logger.error(f"{prefix} Error moving \n\t{Fore.RED}{file}: \n\t{e}{Fore.RESET}") 
         else:
-            print(f"skipping \n\t{Fore.YELLOW}{dest_path}...")
-
-        #print(f"{Fore.RESET}\n"*1)            
-        print(f"{Fore.RESET}", end='')        
+            logger.info(f"{prefix} skipping \n\t{Fore.YELLOW}{dest_path}...{Fore.RESET}")
+    ### for mp4_files
