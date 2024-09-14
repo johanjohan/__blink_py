@@ -17,7 +17,7 @@ if __name__ == "__main__":
         python_bin = "D:/__BUP_V_KOMPLETT/X/111_BUP/33projects/__blink_py/venv/Scripts/python.exe"
         script_file = "D:/__BUP_V_KOMPLETT/X/111_BUP/33projects/__blink_py/download_videos.py"
 
-
+        # set cwd to script_file
         print(f"current working dir: {os.getcwd()}")
         os.chdir(os.path.dirname(os.path.abspath(script_file)))
         print(f"changed working dir: {os.getcwd()} \n\n")
@@ -27,7 +27,7 @@ if __name__ == "__main__":
         p1.wait()
         
     except Exception as e:
-        print(e.what())
+        print(e)
         
         
     print(art.text2art("ALL DONE", font=FONT))
