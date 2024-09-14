@@ -247,8 +247,7 @@ async def start():
         if _b_verbose:
             logger.debug("listing cameras:")
             for name, camera in blink.cameras.items():
-                logger.debug(name)
-                logger.debug(camera.attributes, "\n")
+                logger.debug(f"name: {name}\ncamera.attribute: {camera.attributes}\n")
 
         # local storage
         my_sync._local_storage["manifest"] = SortedSet()

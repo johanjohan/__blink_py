@@ -14,9 +14,7 @@ if __name__ == "__main__":
 
         # Path to a Python interpreter that runs any Python script
         # under the virtualenv /path/to/virtualenv/
-        #python_bin = "D:/__BUP_V_KOMPLETT/X/111_BUP/33projects/__blink_py/blinkpy/venv/Scripts/python.exe"
         python_bin = "D:/__BUP_V_KOMPLETT/X/111_BUP/33projects/__blink_py/venv/Scripts/python.exe"
-        #+script_file = "D:/__BUP_V_KOMPLETT/X/111_BUP/33projects/__blink_py/blinkpy/__download_videos.py"
         script_file = "D:/__BUP_V_KOMPLETT/X/111_BUP/33projects/__blink_py/download_videos.py"
 
 
