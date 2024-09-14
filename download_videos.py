@@ -66,21 +66,21 @@ from sortedcontainers import SortedSet
 # ------------------------------------------------
 # | params
 # ------------------------------------------------
+FOLDER_CLOUD    = "sorted_cloud"
+FOLDER_LOCAL    = "sorted_local"
+FOLDER_SECRET   = "secret"
+CREDENTIALS     = f"{FOLDER_SECRET}/.blink_credentials.json" # "../__blink_credentials.json"
 
-EXT         = ".mp4"
-OUTDIR      = os.path.abspath("__blink_videos") # "../__blink_videos"
-CAMERA_NAME = "all"
-CREDENTIALS = ".blink_credentials.json" # "../__blink_credentials.json"
+EXT             = ".mp4"
+OUTDIR          = os.path.abspath("__blink_videos") # "../__blink_videos"
+CAMERA_NAME     = "all"
 
-ASCIIFONT   = 'isometric3'
+ASCIIFONT       = 'isometric3'
 
-FOLDER_CLOUD= "sorted_cloud"
-FOLDER_LOCAL= "sorted_local"
-
-B_BLINK     = True
-B_CLOUD     = True
-B_SYNC      = True
-B_FOLDERS   = True
+B_BLINK         = True
+B_CLOUD         = True
+B_SYNC          = True
+B_FOLDERS       = True
 
 # ------------------------------------------------
 # | init
@@ -226,7 +226,7 @@ async def start():
     
 
     # NEW TODO - from blinksync.py
-    # await blink.save(f"{OUTDIR}/../__temp_blink.json") # OK!!!
+    await blink.save(f"{OUTDIR}/../{FOLDER_SECRET}/__temp_blink.json") # OK!!!
 
     # ------------------------------------------------
     # | sync module

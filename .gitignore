@@ -162,6 +162,7 @@ cython_debug/
 #.idea/
 
 # 3j
+secret/
 .blink_credentials.json
 __temp_blink*.json
 
