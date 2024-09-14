@@ -6,3 +6,7 @@ using https://github.com/fronzbot/blinkpy
     "username": "name@domain.com",
     "password": "mypass123"
 }
+
+blink is from am@zon
+https://blinkforhome.com/about-us
+
