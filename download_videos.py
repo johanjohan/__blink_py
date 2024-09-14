@@ -160,7 +160,7 @@ colorama.init()
 # print(Fore.RESET + 'RESET')
 # print(Fore.WHITE + 'WHITE')
 # print(Fore.YELLOW + 'YELLOW')
-logger.info(f"\n{Fore.YELLOW}{art.text2art("XBLINK", font=ASCIIFONT)}") # {Fore.RESET}
+logger.info(f"\n{Fore.YELLOW}{art.text2art("BLINK", font=ASCIIFONT)}") # {Fore.RESET}
 
 # change cwd
 if False:
