@@ -69,7 +69,7 @@ from sortedcontainers import SortedSet
 # ------------------------------------------------
 # Configure the logger
 logging.basicConfig(
-    level=logging.DEBUG,  # Set the logging level to DEBUG INFO
+    level=logging.INFO,  # Set the logging level to DEBUG INFO
     #format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',  # Define the log message format
     format='%(message)s',  # Define the log message format
     handlers=[
