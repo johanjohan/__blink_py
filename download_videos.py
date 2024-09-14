@@ -48,6 +48,10 @@
     load_dotenv()
     webhook_passphrase  = os.getenv("webhook_passphrase") # config.WEBHOOK_PASSPHRASE
     ipinfo_token        = os.getenv("ipinfo_token")
+    
+    ...........................................
+    logger
+    ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
  
 """
 import asyncio
