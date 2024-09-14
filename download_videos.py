@@ -91,13 +91,6 @@ from tqdm import tqdm
 # ------------------------------------------------
 class CustomFormatter(logging.Formatter):
     #https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
-
-    # # # # # grey        = Fore.LIGHTBLACK_EX
-    # # # # # white       = Fore.WHITE
-    # # # # # yellow      = Fore.YELLOW
-    # # # # # red         = Fore.RED
-    # # # # # bold_red    = Style.BRIGHT + Fore.RED
-    # # # # # reset       = Fore.RESET
     level       = Fore.LIGHTBLACK_EX + '%(levelname)7s | '
     #format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
     format = '%(message)s'
@@ -116,14 +109,6 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
     
 # Configure the logger
-# # # # # logging.basicConfig(
-# # # # #     level=logging.INFO,  # Set the logging level to DEBUG INFO
-# # # # #     #format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',  # Define the log message format
-# # # # #     format='[%(levelname)7s] %(message)s',  # Define the log message format
-# # # # #     handlers=[
-# # # # #         logging.StreamHandler()  # Output logs to the console
-# # # # #     ]
-# # # # # )
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO) # change here INFO DEBUG
 
@@ -328,6 +313,7 @@ async def start():
     # | sync module: dl local files from usb
     # ------------------------------------------------
     if B_SYNC:
+        logger.info(f"\n{Fore.CYAN}{art.text2art("save sync", font=ASCIIFONT)}")
         logger.debug(f"Sync status: {blink.network_ids}")
         logger.debug(f"Sync len: {len(blink.networks)}")   
         logger.info(f"Sync: {blink.networks}")   
@@ -337,7 +323,7 @@ async def start():
             blink.networks[list(blink.networks)[0]]["name"]
         ]       
         
-        _b_verbose = True 
+        _b_verbose = False 
 
         # verbose cams
         if _b_verbose:
@@ -391,7 +377,7 @@ async def start():
 # | run blink
 # ------------------------------------------------
 if B_BLINK:
-    logger.info(f"\n{Fore.CYAN}{art.text2art("save sync", font=ASCIIFONT)}")
+    logger.info(f"\n{Fore.CYAN}{art.text2art("BLINK", font=ASCIIFONT)}")
     countdown()
     blink = asyncio.run(start())
     
@@ -402,8 +388,8 @@ if B_BLINK:
 # | sort & copy files to local date folder    
 # ------------------------------------------------
 if B_FOLDERS:
-    countdown()
     logger.info(f"\n{Fore.CYAN}{art.text2art("folders", font=ASCIIFONT)}")
+    countdown()
 
     mp4_files = scan_directory_for_mp4(OUTDIR)
     logger.info(f"Found {len(mp4_files)} files ending with \"{EXT}\" \n")
