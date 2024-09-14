@@ -74,6 +74,7 @@ CREDENTIALS     = f"{FOLDER_SECRET}/.blink_credentials.json" # "../__blink_crede
 EXT             = ".mp4"
 OUTDIR          = os.path.abspath("__blink_videos") # "../__blink_videos"
 CAMERA_NAME     = "all"
+DELAY           = 2 # secs
 
 ASCIIFONT       = 'isometric3'
 
@@ -181,11 +182,6 @@ logging.basicConfig(
 )
 
 # ------------------------------------------------
-# | OUTDIR
-# ------------------------------------------------
-
-
-# ------------------------------------------------
 # |
 # ------------------------------------------------
 
@@ -221,7 +217,7 @@ async def start():
             camera=CAMERA_NAME,
             since="2024/01/01 00:00", 
             stop=1000, 
-            delay=2
+            delay=DELAY
         ) 
     
 
@@ -276,21 +272,19 @@ async def start():
      
             # D:\__BUP_V_KOMPLETT\X\111_BUP\33projects\__blink_py\__blink_videos/__sync__/2-G8T1-GJ01-3205-1XHG_2024-09-11T06_05_17+02_00.mp4   
             dt = item.created_at.astimezone().isoformat().replace(':','-')
-            # folder_date = dt[:10]
-            # print(f"folder_date: {folder_date}")
             filepath = f"{OUTDIR}/../{FOLDER_LOCAL}/{dt[:10]}/{item.name}-{dt}_sync.mp4"
             create_dir_if_not_exists(os.path.dirname(filepath))
             
             if os.path.exists(filepath):
-                print(f"{Fore.YELLOW}\t skipping: {filepath}{Fore.RESET}")
+                print(f"{Fore.YELLOW}\t sync skipping: {filepath}{Fore.RESET}")
                 continue
             else:
-                print(f"{Fore.GREEN}\t downloading: {filepath}{Fore.RESET}")
+                print(f"{Fore.GREEN}\t sync downloading: {filepath}{Fore.RESET}")
                 print(f"{Fore.CYAN}\t item: {item.name} {item.id} {Fore.RESET}") # {item}
                 
                 await item.prepare_download(blink) # ? copy usb to cloud?
                 await item.download_video(blink, filepath)
-                await asyncio.sleep(2)
+                await asyncio.sleep(DELAY)
         
     # all done return
     return blink
@@ -301,11 +295,11 @@ async def start():
 if B_BLINK:
     blink = asyncio.run(start())
     
-# Properly close the Blink session
+# Properly close the Blink session TODO 
 ### await blink.async_logout()
 
 # ------------------------------------------------
-# | move file to local date folder    
+# | sort & copy files to local date folder    
 # ------------------------------------------------
 if B_FOLDERS:
     print(Fore.CYAN + art.text2art("folders", font=ASCIIFONT) + Fore.RESET)
