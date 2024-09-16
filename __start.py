@@ -10,7 +10,7 @@ from pathlib import Path
 FONT="thin3" # isometric3 4max bubble digital drpepper future_8 +tarty2 +thin3 tiny2 
 
 def logo(_msg):
-    print(f"\n\n{Fore.MAGENTA}{art.text2art(_msg.upper(), font=FONT)}{Fore.RESET}\n")
+    print(f"\n\n{Fore.MAGENTA}3j - {art.text2art(_msg.upper(), font=FONT)}{Fore.RESET}\n")
 
 if __name__ == "__main__":
     
