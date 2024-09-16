@@ -85,6 +85,7 @@ from sortedcontainers import SortedSet
 import time
 #from tqdm_countdown import tqdm
 from tqdm import tqdm
+import util
 
 # ------------------------------------------------
 # | logger
@@ -141,8 +142,6 @@ B_FOLDERS       = True
 # ------------------------------------------------
 # | init
 # ------------------------------------------------
-def logo(_msg):
-    print(f"\n\n{Fore.CYAN}{art.text2art(_msg.upper(), font=ASCIIFONT)}{Fore.RESET}\n")
     
 colorama.init()
 # print()
@@ -294,7 +293,7 @@ async def start():
     """
     if B_CLOUD:
         #logger.info(f"\n{Fore.CYAN}{art.text2art("save cloud", font=ASCIIFONT)}")
-        logo("save cloud")
+        util.logo("save cloud")
         create_dir_if_not_exists(OUTDIR)
         logger.info(f"saving videos to {OUTDIR}\n")
         
@@ -318,7 +317,7 @@ async def start():
     # ------------------------------------------------
     if B_SYNC:
         #logger.info(f"\n{Fore.CYAN}{art.text2art("save sync", font=ASCIIFONT)}")
-        logo("save sync")
+        util.logo("save sync")
         logger.debug(f"Sync status: {blink.network_ids}")
         logger.debug(f"Sync len: {len(blink.networks)}")   
         logger.info(f"Sync: {blink.networks}")   
@@ -386,19 +385,19 @@ async def start():
 # ------------------------------------------------
 if B_BLINK:
     #logger.info(f"\n{Fore.CYAN}{art.text2art("BLINK", font=ASCIIFONT)}")
-    logo("blink")
+    util.logo("blink")
     countdown()
     blink = asyncio.run(start())
     
 # Properly close the Blink session TODO ???
-### await blink.async_logout()
+### await blink.async_util.logout()
 
 # ------------------------------------------------
 # | sort & copy files to local date folder    
 # ------------------------------------------------
 if B_FOLDERS:
     #logger.info(f"\n{Fore.CYAN}{art.text2art("folders", font=ASCIIFONT)}")
-    logo("folders")
+    util.logo("folders")
     countdown()
 
     mp4_files = scan_directory_for_mp4(OUTDIR)
