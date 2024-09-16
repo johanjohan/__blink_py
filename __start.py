@@ -2,10 +2,15 @@ import subprocess
 import os
 import art
 import colorama
+from colorama import Fore, Back, Style
 from pathlib import Path
 
+
 # https://github.com/sepandhaghighi/art/blob/master/FontList.ipynb
-FONT="4max" # isometric3 4max 
+FONT="thin3" # isometric3 4max bubble digital drpepper future_8 +tarty2 +thin3 tiny2 
+
+def logo(_msg):
+    print(f"\n\n{Fore.MAGENTA}{art.text2art(_msg.upper(), font=FONT)}{Fore.RESET}\n")
 
 if __name__ == "__main__":
     
@@ -18,8 +23,8 @@ if __name__ == "__main__":
         python_bin  = f"{my_dir}/venv/Scripts/python.exe"
         script_file = f"{my_dir}/download_videos.py"
         
-        #print("\n" + art.text2art(os.path.basename(script_file), font=FONT))
-        print("\n" + art.text2art(Path(script_file).stem, font=FONT))
+        logo(Path(script_file).stem)
+        #exit(0)
 
         # set cwd to script_file
         print(f"current working dir: {os.getcwd()}")
@@ -34,6 +39,6 @@ if __name__ == "__main__":
         print(e)
         
         
-    print(art.text2art("ALL DONE", font=FONT))
+    logo("all done.")
     input("press enter to continue...")
     exit(0)

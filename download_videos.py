@@ -130,7 +130,7 @@ EXT             = ".mp4"
 OUTDIR          = os.path.abspath("__blink_videos") # "../__blink_videos"
 CAMERA_NAME     = "all"
 DELAY           = 2 # secs
-ASCIIFONT       = 'isometric3'
+ASCIIFONT       = 'thin3' # thin3 isometric3
 
 B_BLINK         = True
 B_CLOUD         = True # in B_BLINK
@@ -141,6 +141,9 @@ B_FOLDERS       = True
 # ------------------------------------------------
 # | init
 # ------------------------------------------------
+def logo(_msg):
+    print(f"\n\n{Fore.CYAN}{art.text2art(_msg.upper(), font=ASCIIFONT)}{Fore.RESET}\n")
+    
 colorama.init()
 # print()
 # print(Fore.BLACK + 'BLACK')
@@ -160,7 +163,7 @@ colorama.init()
 # print(Fore.RESET + 'RESET')
 # print(Fore.WHITE + 'WHITE')
 # print(Fore.YELLOW + 'YELLOW')
-logger.info(f"\n{Fore.YELLOW}{art.text2art("BLINK", font=ASCIIFONT)}") # {Fore.RESET}
+#logger.info(f"\n{Fore.YELLOW}{art.text2art("BLINK", font=ASCIIFONT)}") # {Fore.RESET}
 
 # change cwd
 if False:
@@ -290,7 +293,8 @@ async def start():
               Instead of downloading, entries will be printed to log.
     """
     if B_CLOUD:
-        logger.info(f"\n{Fore.CYAN}{art.text2art("save cloud", font=ASCIIFONT)}")
+        #logger.info(f"\n{Fore.CYAN}{art.text2art("save cloud", font=ASCIIFONT)}")
+        logo("save cloud")
         create_dir_if_not_exists(OUTDIR)
         logger.info(f"saving videos to {OUTDIR}\n")
         
@@ -313,62 +317,66 @@ async def start():
     # | sync module: dl local files from usb
     # ------------------------------------------------
     if B_SYNC:
-        logger.info(f"\n{Fore.CYAN}{art.text2art("save sync", font=ASCIIFONT)}")
+        #logger.info(f"\n{Fore.CYAN}{art.text2art("save sync", font=ASCIIFONT)}")
+        logo("save sync")
         logger.debug(f"Sync status: {blink.network_ids}")
         logger.debug(f"Sync len: {len(blink.networks)}")   
         logger.info(f"Sync: {blink.networks}")   
-        assert len(blink.networks) > 0
         
-        my_sync: BlinkSyncModule = blink.sync[
-            blink.networks[list(blink.networks)[0]]["name"]
-        ]       
-        
-        _b_verbose = False 
-
-        # verbose cams
-        if _b_verbose:
-            logger.debug("listing cameras:")
-            for name, camera in blink.cameras.items():
-                logger.debug(f"name: {name}\ncamera.attribute: {camera.attributes}\n")
-
-        # local storage
-        my_sync._local_storage["manifest"] = SortedSet()
-        await my_sync.refresh()
-        
-        # verbose _local_storage
-        if _b_verbose:
-            if my_sync.local_storage and my_sync.local_storage_manifest_ready:
-                logger.debug(f"{Fore.GREEN}Manifest is ready{Fore.RESET}")
-                logger.debug(f"Manifest {Fore.CYAN}{my_sync._local_storage['manifest']}{Fore.RESET}")
-            else:
-                logger.error(f"{Fore.RED}Manifest not ready{Fore.RESET}")
-            logger.debug("\n"*1)
-                
-            logger.debug("listing blink.cameras.items:")
-            for name, camera in blink.cameras.items():
-                logger.debug(f"{camera.name} status arm: {blink.cameras[name].arm}")
-            logger.debug("\n"*1)
-                
-            new_vid = await my_sync.check_new_videos()
-            logger.debug(f"New videos?: {new_vid}")
-
-        # download videos
-        manifest = my_sync._local_storage["manifest"]
-        for item in reversed(manifest):
-            dt = item.created_at.astimezone().isoformat().replace(':','-')
-            filepath = f"{OUTDIR}/../{FOLDER_LOCAL}/{dt[:10]}/{item.name}-{dt}_sync.mp4" # dt[:10]} is date folder
-            create_dir_if_not_exists(os.path.dirname(filepath))
+        #assert len(blink.networks) > 0
+        if not len(blink.networks) > 0:
+            logger.error(f"NO Sync networks:  len(blink.networks): {len(blink.networks)}")  
+        else:
+            my_sync: BlinkSyncModule = blink.sync[
+                blink.networks[list(blink.networks)[0]]["name"]
+            ]       
             
-            if os.path.exists(filepath):
-                logger.info(f"{Fore.YELLOW}\t sync skipping: {filepath}{Fore.RESET}")
-                continue
-            else:
-                logger.info(f"{Fore.GREEN}\t sync downloading: {filepath}{Fore.RESET}")
-                logger.info(f"{Fore.CYAN}\t item: {item.name} {item.id} {Fore.RESET}") # {item}
+            _b_verbose = False 
+
+            # verbose cams
+            if _b_verbose:
+                logger.debug("listing cameras:")
+                for name, camera in blink.cameras.items():
+                    logger.debug(f"name: {name}\ncamera.attribute: {camera.attributes}\n")
+
+            # local storage
+            my_sync._local_storage["manifest"] = SortedSet()
+            await my_sync.refresh()
+            
+            # verbose _local_storage
+            if _b_verbose:
+                if my_sync.local_storage and my_sync.local_storage_manifest_ready:
+                    logger.debug(f"{Fore.GREEN}Manifest is ready{Fore.RESET}")
+                    logger.debug(f"Manifest {Fore.CYAN}{my_sync._local_storage['manifest']}{Fore.RESET}")
+                else:
+                    logger.error(f"{Fore.RED}Manifest not ready{Fore.RESET}")
+                logger.debug("\n"*1)
+                    
+                logger.debug("listing blink.cameras.items:")
+                for name, camera in blink.cameras.items():
+                    logger.debug(f"{camera.name} status arm: {blink.cameras[name].arm}")
+                logger.debug("\n"*1)
+                    
+                new_vid = await my_sync.check_new_videos()
+                logger.debug(f"New videos?: {new_vid}")
+
+            # download videos
+            manifest = my_sync._local_storage["manifest"]
+            for item in reversed(manifest):
+                dt = item.created_at.astimezone().isoformat().replace(':','-')
+                filepath = f"{OUTDIR}/../{FOLDER_LOCAL}/{dt[:10]}/{item.name}-{dt}_sync.mp4" # dt[:10]} is date folder
+                create_dir_if_not_exists(os.path.dirname(filepath))
                 
-                await item.prepare_download(blink) # ? copy usb to cloud?
-                await item.download_video(blink, filepath)
-                await asyncio.sleep(DELAY)
+                if os.path.exists(filepath):
+                    logger.info(f"{Fore.YELLOW}\t sync skipping: {filepath}{Fore.RESET}")
+                    continue
+                else:
+                    logger.info(f"{Fore.GREEN}\t sync downloading: {filepath}{Fore.RESET}")
+                    logger.info(f"{Fore.CYAN}\t item: {item.name} {item.id} {Fore.RESET}") # {item}
+                    
+                    await item.prepare_download(blink) # ? copy usb to cloud?
+                    await item.download_video(blink, filepath)
+                    await asyncio.sleep(DELAY)
         
     # all done return
     return blink
@@ -378,6 +386,7 @@ async def start():
 # ------------------------------------------------
 if B_BLINK:
     #logger.info(f"\n{Fore.CYAN}{art.text2art("BLINK", font=ASCIIFONT)}")
+    logo("blink")
     countdown()
     blink = asyncio.run(start())
     
@@ -388,7 +397,8 @@ if B_BLINK:
 # | sort & copy files to local date folder    
 # ------------------------------------------------
 if B_FOLDERS:
-    logger.info(f"\n{Fore.CYAN}{art.text2art("folders", font=ASCIIFONT)}")
+    #logger.info(f"\n{Fore.CYAN}{art.text2art("folders", font=ASCIIFONT)}")
+    logo("folders")
     countdown()
 
     mp4_files = scan_directory_for_mp4(OUTDIR)
