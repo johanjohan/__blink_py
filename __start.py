@@ -2,21 +2,24 @@ import subprocess
 import os
 import art
 import colorama
+from pathlib import Path
 
-FONT="isometric3"
+# https://github.com/sepandhaghighi/art/blob/master/FontList.ipynb
+FONT="4max" # isometric3 4max 
 
 if __name__ == "__main__":
     
     try:
         colorama.init()
 
-        print(art.text2art("start", font=FONT))
-
         # Path to a Python interpreter that runs any Python script
         # under the virtualenv /path/to/virtualenv/
         my_dir = os.path.dirname(os.path.abspath(__file__))
         python_bin  = f"{my_dir}/venv/Scripts/python.exe"
         script_file = f"{my_dir}/download_videos.py"
+        
+        #print("\n" + art.text2art(os.path.basename(script_file), font=FONT))
+        print("\n" + art.text2art(Path(script_file).stem, font=FONT))
 
         # set cwd to script_file
         print(f"current working dir: {os.getcwd()}")

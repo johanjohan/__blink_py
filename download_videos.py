@@ -121,8 +121,8 @@ logger.addHandler(ch)
 # ------------------------------------------------
 # | params
 # ------------------------------------------------
-FOLDER_CLOUD    = "sorted_cloud"
-FOLDER_LOCAL    = "sorted_local"
+FOLDER_CLOUD    = "__sorted_cloud"
+FOLDER_LOCAL    = "__sorted_local"
 FOLDER_SECRET   = ".secret"
 CREDENTIALS     = f"{FOLDER_SECRET}/.blink_credentials.json" # "../__blink_credentials.json"
 
@@ -377,7 +377,7 @@ async def start():
 # | run blink
 # ------------------------------------------------
 if B_BLINK:
-    logger.info(f"\n{Fore.CYAN}{art.text2art("BLINK", font=ASCIIFONT)}")
+    #logger.info(f"\n{Fore.CYAN}{art.text2art("BLINK", font=ASCIIFONT)}")
     countdown()
     blink = asyncio.run(start())
     
