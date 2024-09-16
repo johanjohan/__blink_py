@@ -130,7 +130,7 @@ EXT             = ".mp4"
 OUTDIR          = os.path.abspath("__blink_videos") # "../__blink_videos"
 CAMERA_NAME     = "all"
 DELAY           = 2 # secs
-ASCIIFONT       = 'thin3' # thin3 isometric3
+ASCIIFONT       = 'tarty2' # thin3 isometric3 tarty2
 
 B_BLINK         = True
 B_CLOUD         = True # in B_BLINK
