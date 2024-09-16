@@ -429,11 +429,11 @@ if B_FOLDERS:
         if not os.path.exists(dest_path):
             try:
                 shutil.copy(src_path, dest_path) # move
-                logger.info(f"{prefix} copied \n\t{Fore.GREEN}{src_path} \n\tto \n\t{dest_path}{Fore.RESET}")
+                logger.info(f"{prefix} copied {Fore.GREEN}{src_path} \n\tto \n\t{dest_path}")
             except Exception as e:
-                logger.error(f"{prefix} Error moving \n\t{Fore.RED}{file}: \n\t{e}{Fore.RESET}") 
+                logger.error(f"{prefix} Error moving {file}: \n\t{e}") 
         else:
-            logger.info(f"{prefix} skipping \n\t{Fore.YELLOW}{dest_path}...{Fore.RESET}")
+            logger.warning(f"{prefix} skipping {dest_path}...")
     ### for mp4_files
 
 countdown()
