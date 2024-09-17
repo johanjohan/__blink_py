@@ -83,7 +83,6 @@ import colorama
 from colorama import Fore, Back, Style
 from sortedcontainers import SortedSet
 import time
-#from tqdm_countdown import tqdm
 from tqdm import tqdm
 import util
 
@@ -142,29 +141,9 @@ B_FOLDERS       = True
 # ------------------------------------------------
 # | init
 # ------------------------------------------------
-    
 colorama.init()
-# print()
-# print(Fore.BLACK + 'BLACK')
-# print(Fore.BLUE + 'BLUE')
-# print(Fore.CYAN + 'CYAN')
-# print(Fore.GREEN + 'GREEN')
-# print(Fore.LIGHTBLACK_EX + 'LIGHTBLACK_EX')
-# print(Fore.LIGHTBLUE_EX + 'LIGHTBLUE_EX')
-# print(Fore.LIGHTCYAN_EX + 'LIGHTCYAN_EX')
-# print(Fore.LIGHTGREEN_EX + 'LIGHTGREEN_EX')
-# print(Fore.LIGHTMAGENTA_EX + 'LIGHTMAGENTA_EX')
-# print(Fore.LIGHTRED_EX + 'LIGHTRED_EX')
-# print(Fore.LIGHTWHITE_EX + 'LIGHTWHITE_EX')
-# print(Fore.LIGHTYELLOW_EX + 'LIGHTYELLOW_EX')
-# print(Fore.MAGENTA + 'MAGENTA')
-# print(Fore.RED + 'RED')
-# print(Fore.RESET + 'RESET')
-# print(Fore.WHITE + 'WHITE')
-# print(Fore.YELLOW + 'YELLOW')
-#logger.info(f"\n{Fore.YELLOW}{art.text2art("BLINK", font=ASCIIFONT)}") # {Fore.RESET}
 
-# change cwd
+# change cwd: rather in start.py
 if False:
     logger.debug(f"current working dir: {os.getcwd()}")
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -276,6 +255,10 @@ async def start():
     auth = Auth(await bhutil.json_load(CREDENTIALS))
     blink.auth = auth
     await blink.start()
+    
+    status = await blink.get_status() # notification status 
+    print()
+    print("notification status:", bhutil.json_dumps(status))
     
     """
     Download all videos from server since specified time.
@@ -436,4 +419,7 @@ if B_FOLDERS:
     ### for mp4_files
 
 countdown()
+blink.auth = None
+blink = None  # Clear the blink instance to release any data.
+
 exit(0)
