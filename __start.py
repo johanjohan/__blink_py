@@ -7,7 +7,7 @@ from pathlib import Path
 import util
 
 # https://github.com/sepandhaghighi/art/blob/master/FontList.ipynb
-FONT="tarty2" # isometric3 4max bubble digital drpepper future_8 +tarty2 +thin3 tiny2 
+FONT = "tarty2" # isometric3 4max bubble digital drpepper future_8 +tarty2 +thin3 tiny2 
 
 logo = lambda _msg :  util.logo(_msg, _fore=Fore.MAGENTA)
 
