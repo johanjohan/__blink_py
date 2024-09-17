@@ -27,10 +27,9 @@ if __name__ == "__main__":
         script_file = f"{my_dir}/download_videos.py"
         
         logo(Path(script_file).stem)
-        #exit(0)
 
-        # set cwd to script_file
-        print(f"current working dir: {os.getcwd()}")
+        # set cwd to script_file for folder paths relative to this file
+        #print(f"current working dir: {os.getcwd()}")
         os.chdir(os.path.dirname(os.path.abspath(script_file)))
         print(f"changed working dir: {os.getcwd()} \n\n")
 
