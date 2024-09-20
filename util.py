@@ -1,6 +1,10 @@
 from colorama import Fore, Back, Style
 import art
 
+# https://github.com/sepandhaghighi/art/blob/master/FontList.ipynb
+# FONT = "tarty2" # isometric3 4max bubble digital drpepper future_8 +tarty2 +thin3 tiny2 
+
+
 def logo(_msg, _font="tarty2", _fore=Fore.YELLOW):
     print(f"\n{_fore}{art.text2art(_msg.upper(), font=_font)}{Fore.RESET}\n")
     
