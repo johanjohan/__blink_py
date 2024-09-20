@@ -15,8 +15,10 @@ if __name__ == "__main__":
 
         # under the virtualenv /path/to/virtualenv/
         my_dir = os.path.dirname(os.path.abspath(__file__))
-        python_bin  = f"{my_dir}/venv/Scripts/python.exe"
-        script_file = f"{my_dir}/download_videos.py"
+        python_bin_local  = f"venv/Scripts/python.exe"
+        script_file_local = f"download_videos.py"
+        python_bin  = f"{my_dir}/{python_bin_local}"
+        script_file = f"{my_dir}/{script_file_local}"
         
         logo(Path(script_file).stem)
 
@@ -25,7 +27,7 @@ if __name__ == "__main__":
         os.chdir(os.path.dirname(os.path.abspath(script_file)))
         print(f"changed working dir: {os.getcwd()} \n\n")
 
-        print(Fore.LIGHTBLACK_EX + ' '.join([python_bin, script_file]) + Fore.RESET)
+        print(Fore.LIGHTBLACK_EX + ' '.join([python_bin_local, script_file_local]) + Fore.RESET)
         p1 = subprocess.Popen([python_bin, script_file])
         p1.wait()
         
