@@ -27,7 +27,7 @@ if __name__ == "__main__":
         os.chdir(os.path.dirname(os.path.abspath(script_file)))
         print(f"changed working dir: {os.getcwd()} \n\n")
 
-        print(Fore.LIGHTBLACK_EX + ' '.join([python_bin_local, script_file_local]) + Fore.RESET)
+        print("\t", Fore.LIGHTBLACK_EX + ' '.join([python_bin_local, script_file_local]) + Fore.RESET)
         p1 = subprocess.Popen([python_bin, script_file])
         p1.wait()
         
