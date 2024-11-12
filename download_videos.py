@@ -1,74 +1,17 @@
 """
+    based on
     https://github.com/fronzbot/blinkpy
 
-    When you attempt to log in to your Blink account you’ll receive a one-time, six-digit code to verify it's you. This is sent to your mobile device as a text message (SMS). You can choose to receive this one-time passcode via the email address you have listed on your Blink account or on your phone as a text message (SMS).
-
-    https://support.blinkforhome.com/en_US/account-and-login/multiple-factor-security
-
-
-
-    Tap Settings at the bottom of your home screen.
-    Select Account and Privacy > Account Management.
-    On the Account and Privacy screen tap Phone Number.
-    You will be prompted to enter your Blink account password.
-    Note: If you have forgotten your password, you must reset your password before you can update your phone settings. If you no longer have access to the account phone number associated with your Blink account, contact customer support for assistance.
-    On the Change Phone Number screen, tap Receive code by and select Voice call.
-    Both mobile and landline numbers can be used with the Voice call option. Contact customer support if you have any concerns.
-
-
-    Check if your mobile device carrier is flagging your code notification as spam.
-    If you are receiving your PIN via email, kindly check your email's spam, trash, and promotions folders. If you still cannot find it, try accessing your email on a different mobile device or computer.
-
-    ..................
+    asks for code which comes via SMS or call
+    downloads all your videos from the Blink server
     
-    What should I do if I don't receive an SMS?
-
-    If you don't receive the SMS text to complete your Blink registration, make sure your phone has international SMS text messaging permissions or is connected to the internet to receive the confirmation code via WhatsApp.
-
-    Check the following steps: 
-
-        Check Signal and Coverage: Ensure you have strong signal and network coverage.
-
-        Restart Connection: Try restarting your connection by toggling Airplane mode on and off.
-
-        Login with email instead: If you have already associated an email with your account, you can use it to log in instead of SMS verification.
-
-        Check Phone Number: Double-check if you entered your phone number correctly. If there's a typo, correct it and try again.
-
-        Wait for Retry: Blink allows up to 4 attempts per 3 days for SMS delivery. If you have already exceeded this limit, you will need to wait until the cooldown period expires before trying again.
+    2024 11 11 - 3j
+        little cleanup
+        secure_delete
     
-    ...........................................
-    Fore: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
-    Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
-    Style: DIM, NORMAL, BRIGHT, RESET_ALL
-    
-    ...........................................
-    from dotenv import load_dotenv
-
-    load_dotenv()
-    webhook_passphrase  = os.getenv("webhook_passphrase") # config.WEBHOOK_PASSPHRASE
-    ipinfo_token        = os.getenv("ipinfo_token")
-    
-    ...........................................
-    logger
-    ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
-    
-    ...........................................
-    package-two @ git+https://github.com/owner/repo@41b95ec
-    package-two @ git+https://github.com/owner/repo@releases/tag/v3.7.1
-    
-    https://github.com/johanjohan/blinkpy
-    blinkpy @ file:///D:/__BUP_V_KOMPLETT/X/111_BUP/33projects/__blink_py/blinkpy
-    blinkpy @ git+https://github.com/johanjohan/blinkpy
-    ...........................................
-    ...........................................
-    ...........................................
-    ...........................................
-    pip install git+https://github.com/tcbegley/tqdm-countdown.git
-    
-    ...........................................    
- 
 """
+# NOTE 3j: also changed blinkpy.py to add a ansi-colored logger
+
 import asyncio
 from blinkpy.blinkpy import Blink
 from blinkpy.auth import Auth
@@ -85,9 +28,10 @@ from sortedcontainers import SortedSet
 import time
 from tqdm import tqdm
 import util
+from secure_delete import secure_delete
 
 # ------------------------------------------------
-# | logger
+# | custom logger
 # ------------------------------------------------
 class CustomFormatter(logging.Formatter):
     #https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
@@ -110,7 +54,7 @@ class CustomFormatter(logging.Formatter):
     
 # Configure the logger
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO) # change here INFO DEBUG
+logger.setLevel(logging.INFO) # change here ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
 
 # create console handler with a higher log level
 ch = logging.StreamHandler()
@@ -132,18 +76,26 @@ CAMERA_NAME     = "all"
 DELAY           = 2 # secs
 ASCIIFONT       = 'tarty2' # thin3 isometric3 tarty2
 
+# some debug flags
 B_BLINK         = True
 B_CLOUD         = True # in B_BLINK
 B_SYNC          = True # in B_BLINK
 
 B_FOLDERS       = True
 
+# temp paths
+PATH_SECRET_TEMP_CREDENTIALS = f"{OUTDIR}/../{FOLDER_SECRET}/__temp_blink.json"
+PATH_SECRET_INTERNAL_PARAMS  = f"{OUTDIR}/../{FOLDER_SECRET}/homescreen.json" # your system internals, SN#s, keep secret
+
+# file to secure_delete
+FILES_TO_SECURE_DELETE = [PATH_SECRET_TEMP_CREDENTIALS]
+
 # ------------------------------------------------
 # | init
 # ------------------------------------------------
 colorama.init()
 
-# change cwd: rather in start.py
+# change cwd: rather do so in start.py
 if False:
     logger.debug(f"current working dir: {os.getcwd()}")
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -151,32 +103,8 @@ if False:
     # input("Press Enter to continue...")
     # exit(0)
 # ------------------------------------------------
-# | UTIL
+# | util
 # ------------------------------------------------
-# https://github.com/sepandhaghighi/art/blob/master/FontList.ipynb
-# # # # def countdown(_secs=3, _msg="", _fore=Fore.LIGHTBLACK_EX, _font="ticks"): # LIGHTBLACK_EX funky_dr block2  ticks univers varsity black_bubble  fancy141 tarty3 
-# # # #     if False:
-# # # #         for i in range(int(_secs)):
-# # # #             s = str(_secs-i)
-# # # #             if True:
-# # # #                 print(f"{_fore}{s}{Fore.RESET}   ", end='')
-# # # #             else:
-# # # #                 s = art.text2art(str(_secs-i) + _msg, font=_font)
-# # # #                 logger.info(f"{_fore}{s}{Fore.RESET}")
-# # # #             time.sleep(1)
-# # # #         print()
-# # # #     else:
-# # # #         # bar_format = '|{bar:40}| '
-# # # #         # bar_format = '{l_bar}{bar:60}{r_bar}{bar:-10b}'
-# # # #         # bar_format = '{l_bar}{bar:60} {n_fmt}/{total_fmt} [{elapsed}<{remaining}]'
-# # # #         bar_format = '{bar:44} {remaining}\t'
-# # # #         #bar_format = "{desc}: {percentage:.1f}%|{bar:80}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]"
-# # # #         tqdm.write(f"{_fore}", end='\n')
-# # # #         div = 1.0
-# # # #         for i in tqdm(range(int(_secs * div)), bar_format=bar_format): #  ncols=80 bar_format='{l_bar}{bar:10}{r_bar}{bar:-10b}'
-# # # #             time.sleep(1.0/div)
-# # # #         tqdm.write(f"{Fore.RESET}", end='\n')
-        
 def create_dir_if_not_exists(dir_path):
     if not os.path.exists(dir_path):
         try:
@@ -247,7 +175,7 @@ def convert_utc_to_local(date_str, time_str, local_timezone_str, local_z_str):
     return formatted_local_dt
 
 # ------------------------------------------------
-# | blink
+# | blink start()
 # ------------------------------------------------
 async def start():
     
@@ -290,10 +218,10 @@ async def start():
     
 
     # from blinksync.py - save secret internals, just for info...
-    await blink.save(f"{OUTDIR}/../{FOLDER_SECRET}/__temp_blink.json") # OK!!!
+    await blink.save(PATH_SECRET_TEMP_CREDENTIALS) # OK!!!
     
     #await util.json_dumps(blink.homescreen)
-    await bhutil.json_save(blink.homescreen, f"{OUTDIR}/../{FOLDER_SECRET}/homescreen.json")
+    await bhutil.json_save(blink.homescreen, PATH_SECRET_INTERNAL_PARAMS) # all your internal blink params
 
     # ------------------------------------------------
     # | sync module: dl local files from usb
@@ -363,63 +291,155 @@ async def start():
     # all done return
     return blink
 
-# ------------------------------------------------
-# | run blink
-# ------------------------------------------------
-if B_BLINK:
-    #logger.info(f"\n{Fore.CYAN}{art.text2art("BLINK", font=ASCIIFONT)}")
-    util.logo("blink")
+if __name__ == "__main__":
+    # ------------------------------------------------
+    # | run blink: log in...
+    # ------------------------------------------------
+    if B_BLINK:
+        #logger.info(f"\n{Fore.CYAN}{art.text2art("BLINK", font=ASCIIFONT)}")
+        util.logo("blink")
+        util.countdown()
+        blink = asyncio.run(start())
+        
+    # Properly close the Blink session TODO ???
+    ### await blink.async_util.logout()
+
+    # ------------------------------------------------
+    # | sort & copy files to local date folder    
+    # ------------------------------------------------
+    if B_FOLDERS:
+        #logger.info(f"\n{Fore.CYAN}{art.text2art("folders", font=ASCIIFONT)}")
+        util.logo("folders")
+        util.countdown()
+
+        mp4_files = scan_directory_for_mp4(OUTDIR)
+        logger.info(f"Found {len(mp4_files)} files ending with \"{EXT}\" \n")
+
+        for index, file in enumerate(mp4_files):
+            logger.debug(file)
+            camera_str, date_str, time_str, tz = extract_blink_utc_datetime(file)
+            # time_str_extra = time_str[-6:]  # could mean UTC -00-00
+            # time_str = time_str[:-6] # strip tz
+            logger.debug(', '.join([camera_str, date_str, time_str, tz]))
+            
+            local_time = convert_utc_to_local(date_str, time_str, 'Europe/Berlin', "+02-00")
+            logger.debug(f"local_time: {local_time}")
+            local_date_str = str(local_time)[:10]
+            logger.debug(f"date_str: {date_str} --> local_date_str: {local_date_str}")
+
+            local_file = camera_str + "-" + str(local_time) + EXT
+            # 2-g8t1-gj01-3205-1xhg-2024-09-12T23-48-04+02-00.mp4
+            logger.debug(f"{local_file}")
+            
+            date_dir = os.path.join(OUTDIR, f"../{FOLDER_CLOUD}/", local_date_str) # date_str
+            create_dir_if_not_exists(date_dir)
+        
+            src_path  = os.path.join(OUTDIR, file)
+            dest_path = os.path.join(date_dir, local_file) 
+            prefix = f"{index+1}/{len(mp4_files)} -"
+            if not os.path.exists(dest_path):
+                try:
+                    shutil.copy(src_path, dest_path) # move
+                    logger.info(f"{prefix} copied {Fore.GREEN}{src_path} \n\tto \n\t{dest_path}")
+                except Exception as e:
+                    logger.error(f"{prefix} Error moving {file}: \n\t{e}") 
+            else:
+                logger.warning(f"{prefix} skipping {dest_path}...")
+        ### for mp4_files
+
     util.countdown()
-    blink = asyncio.run(start())
+    blink.auth = None
+    blink = None  # Clear the blink instance to release any data.
+
+    # ------------------------------------------------
+    # | delete temp files  
+    # ------------------------------------------------
+    util.logo("delete files")
+    secure_delete.secure_random_seed_init()
     
-# Properly close the Blink session TODO ???
-### await blink.async_util.logout()
-
-# ------------------------------------------------
-# | sort & copy files to local date folder    
-# ------------------------------------------------
-if B_FOLDERS:
-    #logger.info(f"\n{Fore.CYAN}{art.text2art("folders", font=ASCIIFONT)}")
-    util.logo("folders")
-    util.countdown()
-
-    mp4_files = scan_directory_for_mp4(OUTDIR)
-    logger.info(f"Found {len(mp4_files)} files ending with \"{EXT}\" \n")
-
-    for index, file in enumerate(mp4_files):
-        logger.debug(file)
-        camera_str, date_str, time_str, tz = extract_blink_utc_datetime(file)
-        # time_str_extra = time_str[-6:]  # could mean UTC -00-00
-        # time_str = time_str[:-6] # strip tz
-        logger.debug(', '.join([camera_str, date_str, time_str, tz]))
-        
-        local_time = convert_utc_to_local(date_str, time_str, 'Europe/Berlin', "+02-00")
-        logger.debug(f"local_time: {local_time}")
-        local_date_str = str(local_time)[:10]
-        logger.debug(f"date_str: {date_str} --> local_date_str: {local_date_str}")
-
-        local_file = camera_str + "-" + str(local_time) + EXT
-        # 2-g8t1-gj01-3205-1xhg-2024-09-12T23-48-04+02-00.mp4
-        logger.debug(f"{local_file}")
-        
-        date_dir = os.path.join(OUTDIR, f"../{FOLDER_CLOUD}/", local_date_str) # date_str
-        create_dir_if_not_exists(date_dir)
-     
-        src_path  = os.path.join(OUTDIR, file)
-        dest_path = os.path.join(date_dir, local_file) 
-        prefix = f"{index+1}/{len(mp4_files)} -"
-        if not os.path.exists(dest_path):
+    for file in FILES_TO_SECURE_DELETE:        
+        if os.path.exists(file):
             try:
-                shutil.copy(src_path, dest_path) # move
-                logger.info(f"{prefix} copied {Fore.GREEN}{src_path} \n\tto \n\t{dest_path}")
+                ###os.remove(file)
+                secure_delete.secure_delete(file)
+                logger.info(f"securely deleted {file}")
             except Exception as e:
-                logger.error(f"{prefix} Error moving {file}: \n\t{e}") 
+                logger.error(f"Error deleting {file}: {e}")
         else:
-            logger.warning(f"{prefix} skipping {dest_path}...")
-    ### for mp4_files
+            logger.warning(f"File not found: {file}")
 
-util.countdown()
-blink.auth = None
-blink = None  # Clear the blink instance to release any data.
+    exit(0)
 
-exit(0)
+"""
+    dev notes
+    
+    TODO  clean this up
+    
+    When you attempt to log in to your Blink account you’ll receive a one-time, six-digit code to verify it's you. This is sent to your mobile device as a text message (SMS). You can choose to receive this one-time passcode via the email address you have listed on your Blink account or on your phone as a text message (SMS).
+
+    https://support.blinkforhome.com/en_US/account-and-login/multiple-factor-security
+
+
+
+    Tap Settings at the bottom of your home screen.
+    Select Account and Privacy > Account Management.
+    On the Account and Privacy screen tap Phone Number.
+    You will be prompted to enter your Blink account password.
+    Note: If you have forgotten your password, you must reset your password before you can update your phone settings. If you no longer have access to the account phone number associated with your Blink account, contact customer support for assistance.
+    On the Change Phone Number screen, tap Receive code by and select Voice call.
+    Both mobile and landline numbers can be used with the Voice call option. Contact customer support if you have any concerns.
+
+
+    Check if your mobile device carrier is flagging your code notification as spam.
+    If you are receiving your PIN via email, kindly check your email's spam, trash, and promotions folders. If you still cannot find it, try accessing your email on a different mobile device or computer.
+
+    ..................
+    
+    What should I do if I don't receive an SMS?
+
+    If you don't receive the SMS text to complete your Blink registration, make sure your phone has international SMS text messaging permissions or is connected to the internet to receive the confirmation code via WhatsApp.
+
+    Check the following steps: 
+
+        Check Signal and Coverage: Ensure you have strong signal and network coverage.
+
+        Restart Connection: Try restarting your connection by toggling Airplane mode on and off.
+
+        Login with email instead: If you have already associated an email with your account, you can use it to log in instead of SMS verification.
+
+        Check Phone Number: Double-check if you entered your phone number correctly. If there's a typo, correct it and try again.
+
+        Wait for Retry: Blink allows up to 4 attempts per 3 days for SMS delivery. If you have already exceeded this limit, you will need to wait until the cooldown period expires before trying again.
+    
+    ...........................................
+    Fore: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
+    Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
+    Style: DIM, NORMAL, BRIGHT, RESET_ALL
+    
+    ...........................................
+    from dotenv import load_dotenv
+
+    load_dotenv()
+    webhook_passphrase  = os.getenv("webhook_passphrase") # config.WEBHOOK_PASSPHRASE
+    ipinfo_token        = os.getenv("ipinfo_token")
+    
+    ...........................................
+    logger
+    ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
+    
+    ...........................................
+    package-two @ git+https://github.com/owner/repo@41b95ec
+    package-two @ git+https://github.com/owner/repo@releases/tag/v3.7.1
+    
+    https://github.com/johanjohan/blinkpy
+    blinkpy @ file:///D:/__BUP_V_KOMPLETT/X/111_BUP/33projects/__blink_py/blinkpy
+    blinkpy @ git+https://github.com/johanjohan/blinkpy
+    ...........................................
+    ...........................................
+    ...........................................
+    ...........................................
+    pip install git+https://github.com/tcbegley/tqdm-countdown.git
+    
+    ...........................................  
+
+"""
