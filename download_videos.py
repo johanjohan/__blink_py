@@ -6,7 +6,7 @@
     downloads all your videos from the Blink server
     
     2024 11 11 - 3j
-        little cleanup
+        cleanup
         secure_delete
     
 """
@@ -63,7 +63,7 @@ ch.setFormatter(CustomFormatter())
 logger.addHandler(ch)
 
 # ------------------------------------------------
-# | change these params
+# | change these vars
 # ------------------------------------------------
 FOLDER_VIDEOS_BLINK = os.path.abspath("__blink_videos") # "../__blink_videos"
 
@@ -75,7 +75,7 @@ PATH_SECRET_TEMP_CREDENTIALS = f"{FOLDER_VIDEOS_BLINK}/../{FOLDER_SECRET}/__temp
 PATH_SECRET_INTERNAL_PARAMS  = f"{FOLDER_VIDEOS_BLINK}/../{FOLDER_SECRET}/homescreen.json" # all your system internals, SN#s, keep secret
 
 # ------------------------------------------------
-# | params
+# | vars
 # ------------------------------------------------
 FOLDER_CLOUD        = "__sorted_cloud"
 FOLDER_LOCAL        = "__sorted_local"
@@ -97,11 +97,6 @@ B_FOLDERS           = True
 # | file to secure_delete
 # ------------------------------------------------
 FILES_TO_SECURE_DELETE = [PATH_SECRET_TEMP_CREDENTIALS]
-
-# ------------------------------------------------
-# | init
-# ------------------------------------------------
-
 
 # ------------------------------------------------
 # | util
@@ -207,7 +202,7 @@ async def blink_start():
         #logger.info(f"\n{Fore.CYAN}{art.text2art("save cloud", font=ASCIIFONT)}")
         util.logo("save cloud")
         create_dir_if_not_exists(FOLDER_VIDEOS_BLINK)
-        logger.info(f"saving videos to {FOLDER_VIDEOS_BLINK}\n")
+        logger.info(f"saving videos to {Fore.MAGENTA}{FOLDER_VIDEOS_BLINK}{Fore.RESET}\n")
         
         await blink.download_videos(
             path=FOLDER_VIDEOS_BLINK, 
@@ -233,6 +228,8 @@ async def blink_start():
         logger.debug(f"Sync status: {blink.network_ids}")
         logger.debug(f"Sync len: {len(blink.networks)}")   
         logger.info(f"Sync: {blink.networks}")   
+        
+        logger.info(f"saving videos to {Fore.MAGENTA}{FOLDER_LOCAL}{Fore.RESET}\n")
         
         #assert len(blink.networks) > 0
         if not len(blink.networks) > 0:
@@ -315,6 +312,8 @@ if __name__ == "__main__":
         #logger.info(f"\n{Fore.CYAN}{art.text2art("folders", font=ASCIIFONT)}")
         util.logo("folders")
         util.countdown()
+        
+        logger.info(f"saving videos to {Fore.MAGENTA}{FOLDER_CLOUD}{Fore.RESET}\n")
 
         mp4_files = scan_directory_for_mp4(FOLDER_VIDEOS_BLINK)
         logger.info(f"Found {len(mp4_files)} files ending with \"{EXT}\" \n")
