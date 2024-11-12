@@ -63,45 +63,46 @@ ch.setFormatter(CustomFormatter())
 logger.addHandler(ch)
 
 # ------------------------------------------------
-# | params
+# | change these params
 # ------------------------------------------------
-FOLDER_CLOUD    = "__sorted_cloud"
-FOLDER_LOCAL    = "__sorted_local"
+FOLDER_VIDEOS_BLINK = os.path.abspath("__blink_videos") # "../__blink_videos"
+
 FOLDER_SECRET   = ".secret"
 CREDENTIALS     = f"{FOLDER_SECRET}/.blink_credentials.json" # "../__blink_credentials.json"
 
-EXT             = ".mp4"
-OUTDIR          = os.path.abspath("__blink_videos") # "../__blink_videos"
-CAMERA_NAME     = "all"
-DELAY           = 2 # secs
-ASCIIFONT       = 'tarty2' # thin3 isometric3 tarty2
+# temp paths for more secret files
+PATH_SECRET_TEMP_CREDENTIALS = f"{FOLDER_VIDEOS_BLINK}/../{FOLDER_SECRET}/__temp_blink.json"
+PATH_SECRET_INTERNAL_PARAMS  = f"{FOLDER_VIDEOS_BLINK}/../{FOLDER_SECRET}/homescreen.json" # all your system internals, SN#s, keep secret
+
+# ------------------------------------------------
+# | params
+# ------------------------------------------------
+FOLDER_CLOUD        = "__sorted_cloud"
+FOLDER_LOCAL        = "__sorted_local"
+
+EXT                 = ".mp4"
+
+CAMERA_NAME         = "all"
+DELAY               = 2 # secs
+ASCIIFONT           = 'tarty2' # thin3 isometric3 tarty2
 
 # some debug flags
-B_BLINK         = True
-B_CLOUD         = True # in B_BLINK
-B_SYNC          = True # in B_BLINK
+B_BLINK             = True
+B_CLOUD             = True # in B_BLINK
+B_SYNC              = True # in B_BLINK
 
-B_FOLDERS       = True
+B_FOLDERS           = True
 
-# temp paths
-PATH_SECRET_TEMP_CREDENTIALS = f"{OUTDIR}/../{FOLDER_SECRET}/__temp_blink.json"
-PATH_SECRET_INTERNAL_PARAMS  = f"{OUTDIR}/../{FOLDER_SECRET}/homescreen.json" # your system internals, SN#s, keep secret
-
-# file to secure_delete
+# ------------------------------------------------
+# | file to secure_delete
+# ------------------------------------------------
 FILES_TO_SECURE_DELETE = [PATH_SECRET_TEMP_CREDENTIALS]
 
 # ------------------------------------------------
 # | init
 # ------------------------------------------------
-colorama.init()
 
-# change cwd: rather do so in start.py
-if False:
-    logger.debug(f"current working dir: {os.getcwd()}")
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    logger.debug(f"current working dir: {os.getcwd()}")
-    # input("Press Enter to continue...")
-    # exit(0)
+
 # ------------------------------------------------
 # | util
 # ------------------------------------------------
@@ -177,7 +178,7 @@ def convert_utc_to_local(date_str, time_str, local_timezone_str, local_z_str):
 # ------------------------------------------------
 # | blink start()
 # ------------------------------------------------
-async def start():
+async def blink_start():
     
     blink = Blink()
     auth = Auth(await bhutil.json_load(CREDENTIALS))
@@ -205,11 +206,11 @@ async def start():
     if B_CLOUD:
         #logger.info(f"\n{Fore.CYAN}{art.text2art("save cloud", font=ASCIIFONT)}")
         util.logo("save cloud")
-        create_dir_if_not_exists(OUTDIR)
-        logger.info(f"saving videos to {OUTDIR}\n")
+        create_dir_if_not_exists(FOLDER_VIDEOS_BLINK)
+        logger.info(f"saving videos to {FOLDER_VIDEOS_BLINK}\n")
         
         await blink.download_videos(
-            path=OUTDIR, 
+            path=FOLDER_VIDEOS_BLINK, 
             camera=CAMERA_NAME,
             since="2024/01/01 00:00", 
             stop=1000, 
@@ -274,7 +275,7 @@ async def start():
             manifest = my_sync._local_storage["manifest"]
             for item in reversed(manifest):
                 dt = item.created_at.astimezone().isoformat().replace(':','-')
-                filepath = f"{OUTDIR}/../{FOLDER_LOCAL}/{dt[:10]}/{item.name}-{dt}_sync.mp4" # dt[:10]} is date folder
+                filepath = f"{FOLDER_VIDEOS_BLINK}/../{FOLDER_LOCAL}/{dt[:10]}/{item.name}-{dt}_sync.mp4" # dt[:10]} is date folder
                 create_dir_if_not_exists(os.path.dirname(filepath))
                 
                 if os.path.exists(filepath):
@@ -292,6 +293,9 @@ async def start():
     return blink
 
 if __name__ == "__main__":
+    
+    colorama.init()
+    
     # ------------------------------------------------
     # | run blink: log in...
     # ------------------------------------------------
@@ -299,20 +303,20 @@ if __name__ == "__main__":
         #logger.info(f"\n{Fore.CYAN}{art.text2art("BLINK", font=ASCIIFONT)}")
         util.logo("blink")
         util.countdown()
-        blink = asyncio.run(start())
+        blink = asyncio.run(blink_start())
         
     # Properly close the Blink session TODO ???
     ### await blink.async_util.logout()
 
     # ------------------------------------------------
-    # | sort & copy files to local date folder    
+    # | sort & copy blink video files to local date folder    
     # ------------------------------------------------
     if B_FOLDERS:
         #logger.info(f"\n{Fore.CYAN}{art.text2art("folders", font=ASCIIFONT)}")
         util.logo("folders")
         util.countdown()
 
-        mp4_files = scan_directory_for_mp4(OUTDIR)
+        mp4_files = scan_directory_for_mp4(FOLDER_VIDEOS_BLINK)
         logger.info(f"Found {len(mp4_files)} files ending with \"{EXT}\" \n")
 
         for index, file in enumerate(mp4_files):
@@ -331,10 +335,10 @@ if __name__ == "__main__":
             # 2-g8t1-gj01-3205-1xhg-2024-09-12T23-48-04+02-00.mp4
             logger.debug(f"{local_file}")
             
-            date_dir = os.path.join(OUTDIR, f"../{FOLDER_CLOUD}/", local_date_str) # date_str
+            date_dir = os.path.join(FOLDER_VIDEOS_BLINK, f"../{FOLDER_CLOUD}/", local_date_str) # date_str
             create_dir_if_not_exists(date_dir)
         
-            src_path  = os.path.join(OUTDIR, file)
+            src_path  = os.path.join(FOLDER_VIDEOS_BLINK, file)
             dest_path = os.path.join(date_dir, local_file) 
             prefix = f"{index+1}/{len(mp4_files)} -"
             if not os.path.exists(dest_path):
@@ -356,6 +360,7 @@ if __name__ == "__main__":
     # ------------------------------------------------
     util.logo("delete files")
     secure_delete.secure_random_seed_init()
+    util.countdown()
     
     for file in FILES_TO_SECURE_DELETE:        
         if os.path.exists(file):
