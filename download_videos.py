@@ -384,8 +384,6 @@ if __name__ == "__main__":
 
     https://support.blinkforhome.com/en_US/account-and-login/multiple-factor-security
 
-
-
     Tap Settings at the bottom of your home screen.
     Select Account and Privacy > Account Management.
     On the Account and Privacy screen tap Phone Number.
@@ -416,35 +414,10 @@ if __name__ == "__main__":
 
         Wait for Retry: Blink allows up to 4 attempts per 3 days for SMS delivery. If you have already exceeded this limit, you will need to wait until the cooldown period expires before trying again.
     
-    ...........................................
-    Fore: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
-    Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
-    Style: DIM, NORMAL, BRIGHT, RESET_ALL
-    
-    ...........................................
-    from dotenv import load_dotenv
 
-    load_dotenv()
-    webhook_passphrase  = os.getenv("webhook_passphrase") # config.WEBHOOK_PASSPHRASE
-    ipinfo_token        = os.getenv("ipinfo_token")
-    
-    ...........................................
-    logger
-    ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
-    
-    ...........................................
-    package-two @ git+https://github.com/owner/repo@41b95ec
-    package-two @ git+https://github.com/owner/repo@releases/tag/v3.7.1
-    
-    https://github.com/johanjohan/blinkpy
-    blinkpy @ file:///D:/__BUP_V_KOMPLETT/X/111_BUP/33projects/__blink_py/blinkpy
-    blinkpy @ git+https://github.com/johanjohan/blinkpy
     ...........................................
     ...........................................
     ...........................................
-    ...........................................
-    pip install git+https://github.com/tcbegley/tqdm-countdown.git
-    
-    ...........................................  
+
 
 """
