@@ -1,16 +1,18 @@
-a simple script to download both cloud- and local videos from blink.
+a simple script to download both cloud- and local (usb) videos from blink.
 using https://github.com/fronzbot/blinkpy
 
-credentials have the form:
+credentials are stored in a json file *.blink_credentials.json* and have the form:
 
-.blink_credentials.json
+
+```
 {
     "username": "name@domain.com",
     "password": "mypass123"
 }
+```
 
-set credentials with the variable CREDENTIALS as in download_videos.py
+point to the credentials file with the variable CREDENTIALS in *download_videos.py*
 
-blink is from am@zon
+blink is a camera system for home security devices by amazon.
 https://blinkforhome.com/about-us
 
