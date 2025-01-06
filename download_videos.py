@@ -67,8 +67,8 @@ logger.addHandler(ch)
 # ------------------------------------------------
 FOLDER_VIDEOS_BLINK = os.path.abspath("__blink_videos") # "../__blink_videos"
 
-FOLDER_SECRET   = ".secret"
-CREDENTIALS     = f"{FOLDER_SECRET}/.blink_credentials.json" # "../__blink_credentials.json"
+FOLDER_SECRET       = ".secret"
+CREDENTIALS         = os.path.join(FOLDER_SECRET, ".blink_credentials.json") # f"{FOLDER_SECRET}/.blink_credentials.json" # "../__blink_credentials.json"
 
 # temp paths for more secret files
 PATH_SECRET_TEMP_CREDENTIALS = f"{FOLDER_VIDEOS_BLINK}/../{FOLDER_SECRET}/__temp_blink.json"
