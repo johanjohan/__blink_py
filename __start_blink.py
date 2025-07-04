@@ -1,3 +1,10 @@
+"""
+uv init --python 3.12
+pip install pygame==2.6.0
+pygame==2.6.0; sys_platform != "win32"
+uv run __start_blink.py
+"""
+
 import subprocess
 import os
 import art
@@ -20,7 +27,8 @@ if __name__ == "__main__":
 
         # under the virtualenv /path/to/virtualenv/
         my_dir = os.path.dirname(os.path.abspath(__file__))
-        python_bin_local  = "venv/Scripts/python.exe"
+        python_bin_local  = ".venv/Scripts/python.exe"
+        assert os.path.exists(f"{my_dir}/{python_bin_local}"), f"python binary not found: {my_dir}/{python_bin_local}"
         script_file_local = "download_videos.py"
         
         python_bin  = f"{my_dir}/{python_bin_local}"
@@ -40,5 +48,6 @@ if __name__ == "__main__":
         print(e)
     
     logo("all done.")
+    print("now delete all videos from BLINK APP")
     input("press enter to continue...")
     exit(0)

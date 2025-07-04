@@ -318,6 +318,8 @@ if __name__ == "__main__":
         mp4_files = scan_directory_for_mp4(FOLDER_VIDEOS_BLINK)
         logger.info(f"Found {len(mp4_files)} files ending with \"{EXT}\" \n")
 
+        videos_to_delete = []
+
         for index, file in enumerate(mp4_files):
             logger.debug(file)
             camera_str, date_str, time_str, tz = extract_blink_utc_datetime(file)
@@ -343,11 +345,25 @@ if __name__ == "__main__":
             if not os.path.exists(dest_path):
                 try:
                     shutil.copy(src_path, dest_path) # move
-                    logger.info(f"{prefix} copied {Fore.GREEN}{src_path} \n\tto \n\t{dest_path}")
+                    #logger.info(f"{prefix} copied {Fore.GREEN}{src_path} \n\tto \n\t{dest_path}")
+                    logger.info(f"{prefix} shutil.copy {Fore.RED}{file} {Fore.LIGHTBLACK_EX}to {Fore.GREEN}{date_dir}")
+                    videos_to_delete.append(src_path)  
                 except Exception as e:
                     logger.error(f"{prefix} Error moving {file}: \n\t{e}") 
             else:
-                logger.warning(f"{prefix} skipping {dest_path}...")
+                logger.warning(f"{prefix} skipping {file}...")
+                # # # issue: skipped videos remain in the blink folder TODO
+                videos_to_delete.append(src_path)  
+               
+                # # trash_dir = os.path.join(FOLDER_VIDEOS_BLINK, f"__trash")
+                # # create_dir_if_not_exists(trash_dir)
+                # # trash_path = os.path.join(trash_dir, file)
+                # # try:
+                # #     shutil.move(src_path, trash_path) # move
+                # #     logger.info(f"{prefix} moved {Fore.RED}{file} {Fore.LIGHTBLACK_EX}to {Fore.GREEN}{trash_dir}")
+                # # except Exception as e:
+                # #     logger.error(f"{prefix} Error moving {file} to trash: \n\t{e}") 
+
         ### for mp4_files
 
     util.countdown()
@@ -371,6 +387,18 @@ if __name__ == "__main__":
                 logger.error(f"Error deleting {file}: {e}")
         else:
             logger.warning(f"File not found: {file}")
+
+    if False: # TODO: delete all blink videos
+        for file in videos_to_delete:
+            if os.path.exists(file):
+                try:
+                    os.remove(file)
+                    #secure_delete.secure_delete(file)
+                    logger.info(f"securely deleted {file}")
+                except Exception as e:
+                    logger.error(f"Error deleting {file}: {e}")
+            else:
+                logger.warning(f"File not found: {file}")
 
     exit(0)
 
