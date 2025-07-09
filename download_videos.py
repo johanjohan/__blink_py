@@ -299,6 +299,9 @@ def file_exists_and_not_empty(file_path):
     """Check if a file exists and is not empty."""
     return os.path.isfile(file_path) and os.path.getsize(file_path) > 0
 
+# --------------------------------------------------------
+# | __main__
+# --------------------------------------------------------
 if __name__ == "__main__":
     
     colorama.init()
