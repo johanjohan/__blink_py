@@ -48,6 +48,5 @@ if __name__ == "__main__":
         print(e)
     
     logo("all done.")
-    print("now delete all videos from BLINK APP")
     input("press enter to continue...")
     exit(0)

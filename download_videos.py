@@ -29,6 +29,11 @@ import time
 from tqdm import tqdm
 import util
 from secure_delete import secure_delete
+import tkinter as tk
+from tkinter import messagebox
+
+root = tk.Tk()
+root.withdraw()  # hide main window
 
 # ------------------------------------------------
 # | custom logger
@@ -289,6 +294,11 @@ async def blink_start():
     # all done return
     return blink
 
+
+def file_exists_and_not_empty(file_path):
+    """Check if a file exists and is not empty."""
+    return os.path.isfile(file_path) and os.path.getsize(file_path) > 0
+
 if __name__ == "__main__":
     
     colorama.init()
@@ -347,13 +357,13 @@ if __name__ == "__main__":
                     shutil.copy(src_path, dest_path) # move
                     #logger.info(f"{prefix} copied {Fore.GREEN}{src_path} \n\tto \n\t{dest_path}")
                     logger.info(f"{prefix} shutil.copy {Fore.RED}{file} {Fore.LIGHTBLACK_EX}to {Fore.GREEN}{date_dir}")
-                    videos_to_delete.append(src_path)  
+                    #######videos_to_delete.append(src_path)  
                 except Exception as e:
                     logger.error(f"{prefix} Error moving {file}: \n\t{e}") 
             else:
                 logger.warning(f"{prefix} skipping {file}...")
                 # # # issue: skipped videos remain in the blink folder TODO
-                videos_to_delete.append(src_path)  
+                ######videos_to_delete.append(src_path)  
                
                 # # trash_dir = os.path.join(FOLDER_VIDEOS_BLINK, f"__trash")
                 # # create_dir_if_not_exists(trash_dir)
@@ -363,6 +373,10 @@ if __name__ == "__main__":
                 # #     logger.info(f"{prefix} moved {Fore.RED}{file} {Fore.LIGHTBLACK_EX}to {Fore.GREEN}{trash_dir}")
                 # # except Exception as e:
                 # #     logger.error(f"{prefix} Error moving {file} to trash: \n\t{e}") 
+
+            if file_exists_and_not_empty(dest_path):
+                logger.debug(f"{prefix} {Fore.GREEN}file exists and is not empty: {dest_path}")
+                videos_to_delete.append(src_path)
 
         ### for mp4_files
 
@@ -380,25 +394,43 @@ if __name__ == "__main__":
     for file in FILES_TO_SECURE_DELETE:        
         if os.path.exists(file):
             try:
-                ###os.remove(file)
-                secure_delete.secure_delete(file)
+                secure_delete.secure_delete(file) ###os.remove(file)
                 logger.info(f"securely deleted {file}")
             except Exception as e:
                 logger.error(f"Error deleting {file}: {e}")
         else:
             logger.warning(f"File not found: {file}")
+    util.logo("done secure_delete.")
 
-    if False: # TODO: delete all blink videos
+    if videos_to_delete:
+        logger.warning(f"\nNow delete all videos in BLINK-app.")
+        result = messagebox.showwarning("Warning", "Now delete all videos in BLINK-app.")
+        
+        logger.warning(f"videos_to_delete: {len(videos_to_delete)} files:")
         for file in videos_to_delete:
-            if os.path.exists(file):
-                try:
-                    os.remove(file)
-                    #secure_delete.secure_delete(file)
-                    logger.info(f"securely deleted {file}")
-                except Exception as e:
-                    logger.error(f"Error deleting {file}: {e}")
-            else:
-                logger.warning(f"File not found: {file}")
+            logger.info(f"\t{os.path.basename(file)}")
+        
+        result = messagebox.askokcancel("Confirm", "Now we will delete the complete list videos_to_delete")
+        logger.info("User clicked OK" if result else "User clicked Cancel")
+
+        if result: # delete all blink videos
+            for file in videos_to_delete:
+                if os.path.exists(file):
+                    try:
+                        os.remove(file)
+                        #secure_delete.secure_delete(file)
+                        logger.info(f"securely deleted {file}")
+                    except Exception as e:
+                        logger.error(f"Error deleting {file}: {e}")
+                else:
+                    logger.warning(f"File not found: {file}")
+
+            ###
+        ###
+        util.logo("done delete files.")
+    else:
+        logger.info("No videos to delete.")
+    ###
 
     exit(0)
 
