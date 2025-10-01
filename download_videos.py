@@ -187,7 +187,7 @@ async def blink_start():
     
     status = await blink.get_status() # notification status 
     print()
-    print("notification status:", bhutil.json_dumps(status))
+    print("notification status:", Fore.MAGENTA, bhutil.json_dumps(status))
     
     """
     Download all videos from server since specified time.
