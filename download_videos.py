@@ -8,19 +8,55 @@
     2024 11 11 - 3j
         cleanup
         secure_delete
+
+
+    2025 11 23
+        update blinkpy
+
+git -C .\blinkpy fetch upstream; git -C .\blinkpy fetch origin; git -C .\blinkpy branch -vv; git -C .\blinkpy status --porcelain; pip show blinkpy; python -c "import blinkpy, inspect, sys; print('ver:', getattr(blinkpy,'__version__','no __version__')); print('file:', inspect.getsourcefile(blinkpy) or 'None')"
+# fetch already done; merge upstream/master into current branch (dev)
+git -C .\blinkpy merge --no-ff upstream/master
     
+
+Official repo (upstream): https://github.com/fronzbot/blinkpy
+
+Clone: git clone https://github.com/fronzbot/blinkpy.git
+Install latest via pip: 
+    pip install --upgrade git+https://github.com/fronzbot/blinkpy.git@main
+Install a tagged release: 
+    pip install --upgrade git+https://github.com/fronzbot/blinkpy.git@v0.24.1
+Your fork (origin): https://github.com/johanjohan/blinkpy.git
+
+Pull upstream into your local copy:
+Or reset your master to upstream:
+PyPI page: https://pypi.org/project/blinkpy/
+
+.............
+To install the current development version, perform the following steps. Note that the following will create a blinkpy directory in your home area:
+
+$ cd ~
+$ git clone https://github.com/fronzbot/blinkpy.git
+$ cd blinkpy
+$ pip install .
+
 """
 # NOTE 3j: also changed blinkpy.py to add a ansi-colored logger
 
 import asyncio
-from blinkpy.blinkpy import Blink
-from blinkpy.auth import Auth
+if True:
+    from aiohttp import ClientSession
+    from blinkpy.blinkpy import Blink
+    from blinkpy.auth import Auth, BlinkTwoFARequiredError
+    import blinkpy.helpers.util as bhutil
+else:
+    from blinkpy.blinkpy import Blink
+    from blinkpy.auth import Auth
+    import blinkpy.helpers.util as bhutil
 import os
 import logging
 import shutil
 from datetime import datetime
 import pytz
-import blinkpy.helpers.util as bhutil
 import art
 import colorama 
 from colorama import Fore, Back, Style
@@ -31,6 +67,7 @@ import util
 from secure_delete import secure_delete
 import tkinter as tk
 from tkinter import messagebox
+import json
 
 root = tk.Tk()
 root.withdraw()  # hide main window
@@ -179,12 +216,103 @@ def convert_utc_to_local(date_str, time_str, local_timezone_str, local_z_str):
 # | blink start()
 # ------------------------------------------------
 async def blink_start():
-    
-    blink = Blink()
-    auth = Auth(await bhutil.json_load(CREDENTIALS))
+
+    # https://github.com/fronzbot/blinkpy
+    # 2FA needed in 202511
+
+    blink = Blink(session=ClientSession())
+    # Can set no_prompt when initializing auth handler
+    auth = Auth(await bhutil.json_load(CREDENTIALS), no_prompt=True)
     blink.auth = auth
-    await blink.start()
-    
+    try:
+        await blink.start()
+    except BlinkTwoFARequiredError:
+        await blink.prompt_2fa()
+    #return blink
+
+    if False:
+        blink = Blink(session=ClientSession())
+        try:
+            # old login
+            auth = Auth(await bhutil.json_load(CREDENTIALS))
+            blink.auth = auth
+            await blink.start()
+        except BlinkTwoFARequiredError:
+            # Blink uses `setup_prompt_2fa` to prompt for the OTP; call that
+            print(f"{Fore.YELLOW}BlinkTwoFARequiredError: two-factor authentication required.{Fore.RESET}")
+            await blink.prompt_2fa()
+        return blink
+
+        
+        blink = Blink()
+
+        # The Blink() constructor creates an Auth() instance which in turn
+        # creates an aiohttp ClientSession if none is provided. We'll close
+        # that initial session before replacing `blink.auth` to avoid
+        # leaving an unclosed client session around.
+        try:
+            if getattr(blink, "auth", None) and getattr(blink.auth, "session", None):
+                try:
+                    await blink.auth.session.close()
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+        credentials = await bhutil.json_load(CREDENTIALS)
+        if credentials is None:
+            logger.error(f"No credentials found or failed to load: {CREDENTIALS}")
+            return blink
+
+        if False:
+            try:
+                print(f"blink_start: loaded credentials from {CREDENTIALS}: {json.dumps(credentials, indent=4)}")
+            except TypeError:
+                logger.debug("Loaded credentials contain non-serializable data; not printed")
+
+        """
+        not found
+                https://rest-prod.immedia-semi.com/api/v5/account/login
+            curl 'https://rest-prod.immedia-semi.com/api/v5/account/login' -X POST -H 'Content-Type: application/json' -d '{"unique_id": "00000000-0000-0000-0000-000000000000", "password":"aPassword","email":"anEmail"}'    
+        """
+        auth = Auth(credentials)
+        # Validate loaded credentials
+        if not isinstance(credentials, dict):
+            logger.error(f"Invalid credentials type: {type(credentials)} (expected dict)")
+            return blink
+
+        # Create Auth instance, guard against construction errors
+        try:
+            auth = Auth(credentials)
+        except Exception as e:
+            logger.error(f"Failed to create Auth object: {e}")
+            return blink
+
+        # Sanity checks / debug info about the auth object
+        if getattr(auth, "session", None) is None:
+            logger.debug("Auth has no aiohttp session (Auth may create one later).")
+        else:
+            logger.debug("Auth session present.")
+
+        # Optionally log minimal credential info (avoid printing secrets)
+        try:
+            acct = credentials.get("account") or credentials.get("accounts")
+            if acct:
+                logger.debug("Credentials contain account information (not shown).")
+        except Exception:
+            pass
+        blink.auth = auth
+
+        started = await blink.start()
+        if not started:
+            logger.error("Blink start failed. Check credentials and network.")
+            try:
+                if hasattr(blink, "auth") and getattr(blink.auth, "session", None):
+                    await blink.auth.session.close()
+            except Exception:
+                pass
+            return blink
+
     status = await blink.get_status() # notification status 
     print()
     print("notification status:", Fore.MAGENTA, bhutil.json_dumps(status))
@@ -384,6 +512,17 @@ if __name__ == "__main__":
         ### for mp4_files
 
     util.countdown()
+    # Close the aiohttp client session if present to avoid 'Unclosed client session' warnings
+    try:
+        if blink and getattr(blink, "auth", None) and getattr(blink.auth, "session", None):
+            try:
+                asyncio.run(blink.auth.session.close())
+            except Exception:
+                # best-effort close; ignore errors
+                pass
+    except Exception:
+        pass
+
     blink.auth = None
     blink = None  # Clear the blink instance to release any data.
 
