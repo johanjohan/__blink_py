@@ -316,6 +316,12 @@ async def blink_start():
     status = await blink.get_status() # notification status 
     print()
     print("notification status:", Fore.MAGENTA, bhutil.json_dumps(status))
+
+    for name, camera in blink.cameras.items():
+        print(f"{Fore.MAGENTA}{name}")              # Name of the camera
+        print(f"{Fore.CYAN}{camera.attributes}")    # Print available attributes of camera
+        print()
+    #exit(0)
     
     """
     Download all videos from server since specified time.
@@ -339,7 +345,7 @@ async def blink_start():
         
         await blink.download_videos(
             path=FOLDER_VIDEOS_BLINK, 
-            camera=CAMERA_NAME,
+            #camera=CAMERA_NAME,
             since="2024/01/01 00:00", 
             stop=1000, 
             delay=DELAY
@@ -348,14 +354,16 @@ async def blink_start():
 
     # from blinksync.py - save secret internals, just for info...
     await blink.save(PATH_SECRET_TEMP_CREDENTIALS) # OK!!!
-    
-    #await util.json_dumps(blink.homescreen)
+
+    #TypeError: object str can't be used in 'await' expression
+    ###await bhutil.json_dumps(blink.homescreen)
+    logger.debug(f"blink.homescreen: {blink.homescreen}")
     await bhutil.json_save(blink.homescreen, PATH_SECRET_INTERNAL_PARAMS) # all your internal blink params
 
     # ------------------------------------------------
     # | sync module: dl local files from usb
     # ------------------------------------------------
-    if B_SYNC:
+    if B_SYNC: # local
         #logger.info(f"\n{Fore.CYAN}{art.text2art("save sync", font=ASCIIFONT)}")
         util.logo("save sync")
         logger.debug(f"Sync status: {blink.network_ids}")
